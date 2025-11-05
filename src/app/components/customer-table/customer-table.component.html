@@ -51,7 +51,7 @@
       </tr>
     </ng-template>
     
-    <ng-template pTemplate="rowexpansion" let-customer let-index="rowIndex">
+    <ng-template pTemplate="expandedrow" let-customer let-index="rowIndex">
       <tr>
         <td colspan="6">
           <div class="beneficiaries-container">
@@ -86,14 +86,14 @@
                   <td>{{ beneficiaryControl.get('name')?.value }}</td>
                   <td>{{ beneficiaryControl.get('question')?.value }}</td>
                   <td>
-                    <p-dropdown
+                    <p-select
                       [formControl]="beneficiaryControl.get('answer')"
                       [options]="answerOptions"
                       optionLabel="label"
                       optionValue="value"
                       placeholder="Select an answer"
                       [style]="{ width: '100%' }">
-                    </p-dropdown>
+                    </p-select>
                   </td>
                   <td>
                     <div class="action-buttons">

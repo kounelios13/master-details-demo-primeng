@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { RippleModule } from 'primeng/ripple';
 import { Customer, Beneficiary, MOCK_CUSTOMERS, ANSWER_OPTIONS } from '../../models/customer.model';
@@ -16,7 +16,7 @@ import { Customer, Beneficiary, MOCK_CUSTOMERS, ANSWER_OPTIONS } from '../../mod
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
-    DropdownModule,
+    SelectModule,
     TooltipModule,
     RippleModule
   ],
