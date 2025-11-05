@@ -27,7 +27,7 @@ export class CustomerTableComponent implements OnInit {
   customersForm!: FormGroup;
   customers: Customer[] = [];
   answerOptions = ANSWER_OPTIONS;
-  expandedRows: { [key: string]: boolean} = {};
+  expandedRows: { [key: string]: boolean } = {};
 
   constructor(private fb: FormBuilder) {}
 
