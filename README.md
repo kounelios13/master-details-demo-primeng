@@ -101,7 +101,7 @@ Each beneficiary stores its original answer, allowing the application to:
 ## Technologies
 
 - **Angular 19** - Latest Angular framework with standalone components
-- **PrimeNG 17** - Rich UI component library
+- **PrimeNG 19** - Rich UI component library
 - **TypeScript 5.5** - Typed superset of JavaScript
 - **Reactive Forms** - Angular's model-driven form approach
 
