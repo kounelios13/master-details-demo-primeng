@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -21,15 +21,15 @@ import { Customer, Beneficiary, MOCK_CUSTOMERS, ANSWER_OPTIONS } from '../../mod
     RippleModule
   ],
   templateUrl: './customer-table.component.html',
-  styleUrls: ['./customer-table.component.css']
+  styleUrl: './customer-table.component.css'
 })
 export class CustomerTableComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  
   customersForm!: FormGroup;
   customers: Customer[] = [];
   answerOptions = ANSWER_OPTIONS;
   expandedRows: { [key: string]: boolean } = {};
-
-  constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.customers = MOCK_CUSTOMERS;

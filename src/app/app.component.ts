@@ -7,7 +7,7 @@ import { CustomerTableComponent } from './components/customer-table/customer-tab
   standalone: true,
   imports: [RouterOutlet, CustomerTableComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'Master-Details Demo with PrimeNG';

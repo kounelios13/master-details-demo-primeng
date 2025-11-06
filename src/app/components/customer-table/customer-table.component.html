@@ -36,17 +36,18 @@
           </span>
         </td>
         <td>
-          <span
-            *ngIf="hasChanges(index)"
-            class="status-badge status-changed"
-            pTooltip="Has unsaved changes">
-            {{ getChangedCount(index) }} changed
-          </span>
-          <span
-            *ngIf="!hasChanges(index)"
-            class="status-badge status-saved">
-            Saved
-          </span>
+          @if (hasChanges(index)) {
+            <span
+              class="status-badge status-changed"
+              pTooltip="Has unsaved changes">
+              {{ getChangedCount(index) }} changed
+            </span>
+          } @else {
+            <span
+              class="status-badge status-saved">
+              Saved
+            </span>
+          }
         </td>
       </tr>
     </ng-template>
@@ -114,15 +115,16 @@
             </p-table>
             
             <div class="beneficiaries-footer">
-              <button
-                *ngIf="hasChanges(index)"
-                pButton
-                type="button"
-                label="Save All Changes"
-                icon="pi pi-save"
-                class="p-button-success"
-                (click)="saveAllChanges(index)">
-              </button>
+              @if (hasChanges(index)) {
+                <button
+                  pButton
+                  type="button"
+                  label="Save All Changes"
+                  icon="pi pi-save"
+                  class="p-button-success"
+                  (click)="saveAllChanges(index)">
+                </button>
+              }
             </div>
           </div>
         </td>
