@@ -59,6 +59,12 @@
   color: #374151;
 }
 
+.beneficiaries-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
 .row-changed {
   background-color: #fffbeb !important;
 }
