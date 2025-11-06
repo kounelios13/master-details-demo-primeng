@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
@@ -29,7 +32,6 @@ jobs:
 
     - name: Run linter (if available)
       run: npm run lint --if-present
-      continue-on-error: true
 
     - name: Run tests
       run: npm test -- --browsers=ChromeHeadless --watch=false --code-coverage
