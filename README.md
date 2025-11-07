@@ -11,6 +11,7 @@ Angular 19 application demonstrating master-details pattern with reactive forms 
 - ✅ Change tracking and validation
 - ✅ Individual and bulk save operations
 - ✅ Reset functionality for unsaved changes
+- ✅ Nx monorepo for scalable development
 
 ## Prerequisites
 
@@ -37,6 +38,41 @@ npm start
 
 4. Open your browser and navigate to `http://localhost:4200`
 
+## Nx Workspace
+
+This project uses **Nx** for monorepo management, providing:
+- **Intelligent caching** - Builds and tests are cached for faster execution
+- **Project graph** - Understand dependencies between projects
+- **Generators** - Scaffold new applications and libraries quickly
+- **Scalability** - Easy to add new projects (APIs, libraries, etc.)
+
+### Adding a New API Project
+
+To add a new API project to this workspace:
+
+```bash
+# For a Node.js/Express API
+npx nx g @nx/express:application api
+
+# For a NestJS API
+npx nx g @nx/nest:application api
+```
+
+### Working with Multiple Projects
+
+```bash
+# Run commands for specific projects
+npx nx build master-details-demo-primeng
+npx nx test master-details-demo-primeng
+
+# Run commands for all projects
+npx nx run-many -t build
+npx nx run-many -t test
+
+# View the project graph
+npx nx graph
+```
+
 ## Project Structure
 
 ```
@@ -56,6 +92,11 @@ src/
 ├── index.html
 ├── main.ts
 └── styles.css
+
+Configuration files:
+├── nx.json               # Nx workspace configuration
+├── project.json          # Project-specific configuration
+└── package.json          # Dependencies and scripts
 ```
 
 ## Usage
@@ -93,10 +134,18 @@ Each beneficiary stores its original answer, allowing the application to:
 
 ## Available Scripts
 
-- `npm start` - Start development server
-- `npm run build` - Build for production
-- `npm run watch` - Build and watch for changes
-- `npm test` - Run unit tests
+- `npm start` - Start development server (uses Nx)
+- `npm run build` - Build for production (uses Nx with caching)
+- `npm run watch` - Build and watch for changes (uses Nx)
+- `npm test` - Run unit tests (uses Nx with caching)
+
+### Nx-Specific Commands
+
+- `npx nx graph` - View the interactive project dependency graph
+- `npx nx show projects` - List all projects in the workspace
+- `npx nx run-many -t build` - Build all projects
+- `npx nx affected -t test` - Test only affected projects
+- `npx nx reset` - Clear Nx cache
 
 ## Technologies
 
@@ -104,6 +153,7 @@ Each beneficiary stores its original answer, allowing the application to:
 - **PrimeNG 19** - Rich UI component library
 - **TypeScript 5.5** - Typed superset of JavaScript
 - **Reactive Forms** - Angular's model-driven form approach
+- **Nx 22** - Smart monorepo build system with caching
 
 ## License
 
