@@ -1,18 +1,36 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
 import { CustomerTableComponent } from './customer-table.component';
-import { Customer, Beneficiary, MOCK_CUSTOMERS } from '../../models/customer.model';
+import { Customer, Beneficiary } from '../../models/customer.model';
+import { CustomerService } from '../../services/customer.service';
+import { LoaderService } from '../../services/loader.service';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+import { MOCK_CUSTOMERS } from '../../testing/mock-data';
 
 describe('CustomerTableComponent', () => {
   let component: CustomerTableComponent;
   let fixture: ComponentFixture<CustomerTableComponent>;
+  let customerService: jasmine.SpyObj<CustomerService>;
+  let loaderService: jasmine.SpyObj<LoaderService>;
 
   beforeEach(async () => {
+    const customerServiceSpy = jasmine.createSpyObj('CustomerService', ['getCustomers']);
+    const loaderServiceSpy = jasmine.createSpyObj('LoaderService', ['show', 'hide']);
+    
+    customerServiceSpy.getCustomers.and.returnValue(of(MOCK_CUSTOMERS));
+
     await TestBed.configureTestingModule({
       imports: [CustomerTableComponent, ReactiveFormsModule],
-      providers: [provideAnimations()]
+      providers: [
+        provideAnimations(),
+        { provide: CustomerService, useValue: customerServiceSpy },
+        { provide: LoaderService, useValue: loaderServiceSpy }
+      ]
     }).compileComponents();
+
+    customerService = TestBed.inject(CustomerService) as jasmine.SpyObj<CustomerService>;
+    loaderService = TestBed.inject(LoaderService) as jasmine.SpyObj<LoaderService>;
 
     fixture = TestBed.createComponent(CustomerTableComponent);
     component = fixture.componentInstance;
@@ -24,7 +42,19 @@ describe('CustomerTableComponent', () => {
   });
 
   describe('Initialization', () => {
-    it('should initialize customers from MOCK_CUSTOMERS', () => {
+    it('should call customer service on init', () => {
+      expect(customerService.getCustomers).toHaveBeenCalled();
+    });
+
+    it('should show loader when loading customers', () => {
+      expect(loaderService.show).toHaveBeenCalled();
+    });
+
+    it('should hide loader after customers are loaded', () => {
+      expect(loaderService.hide).toHaveBeenCalled();
+    });
+
+    it('should initialize customers from service', () => {
       expect(component.customers).toEqual(MOCK_CUSTOMERS);
     });
 
