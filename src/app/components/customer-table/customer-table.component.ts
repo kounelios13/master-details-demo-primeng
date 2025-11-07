@@ -6,7 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { RippleModule } from 'primeng/ripple';
-import { Customer, Beneficiary, MOCK_CUSTOMERS, ANSWER_OPTIONS } from '../../models/customer.model';
+import { Customer, Beneficiary, ANSWER_OPTIONS } from '../../models/customer.model';
+import { CustomerService } from '../../services/customer.service';
+import { LoaderService } from '../../services/loader.service';
 
 @Component({
   selector: 'app-customer-table',
@@ -25,6 +27,8 @@ import { Customer, Beneficiary, MOCK_CUSTOMERS, ANSWER_OPTIONS } from '../../mod
 })
 export class CustomerTableComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private customerService = inject(CustomerService);
+  private loaderService = inject(LoaderService);
   
   customersForm!: FormGroup;
   customers: Customer[] = [];
@@ -32,8 +36,22 @@ export class CustomerTableComponent implements OnInit {
   expandedRows: { [key: string]: boolean } = {};
 
   ngOnInit(): void {
-    this.customers = MOCK_CUSTOMERS;
-    this.initForm();
+    this.loadCustomers();
+  }
+
+  private loadCustomers(): void {
+    this.loaderService.show();
+    this.customerService.getCustomers().subscribe({
+      next: (customers) => {
+        this.customers = customers;
+        this.initForm();
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error loading customers:', error);
+        this.loaderService.hide();
+      }
+    });
   }
 
   private initForm(): void {

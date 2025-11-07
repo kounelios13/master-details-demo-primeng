@@ -1,18 +1,169 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
 import { CustomerTableComponent } from './customer-table.component';
-import { Customer, Beneficiary, MOCK_CUSTOMERS } from '../../models/customer.model';
+import { Customer, Beneficiary } from '../../models/customer.model';
+import { CustomerService } from '../../services/customer.service';
+import { LoaderService } from '../../services/loader.service';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+
+const MOCK_CUSTOMERS: Customer[] = [
+  {
+    id: 1,
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    company: 'Acme Corp',
+    beneficiaries: [
+      {
+        id: 101,
+        name: 'Alice Smith',
+        question: 'Is primary beneficiary?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      },
+      {
+        id: 102,
+        name: 'Bob Johnson',
+        question: 'Receives notifications?',
+        answer: 'no',
+        originalAnswer: 'no'
+      },
+      {
+        id: 103,
+        name: 'Carol Williams',
+        question: 'Has access rights?',
+        answer: 'maybe',
+        originalAnswer: 'maybe'
+      }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Jane Smith',
+    email: 'jane.smith@example.com',
+    company: 'Tech Solutions Inc',
+    beneficiaries: [
+      {
+        id: 201,
+        name: 'David Brown',
+        question: 'Is primary beneficiary?',
+        answer: 'no',
+        originalAnswer: 'no'
+      },
+      {
+        id: 202,
+        name: 'Emma Davis',
+        question: 'Receives notifications?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      }
+    ]
+  },
+  {
+    id: 3,
+    name: 'Michael Johnson',
+    email: 'michael.j@example.com',
+    company: 'Global Enterprises',
+    beneficiaries: [
+      {
+        id: 301,
+        name: 'Frank Miller',
+        question: 'Is primary beneficiary?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      },
+      {
+        id: 302,
+        name: 'Grace Wilson',
+        question: 'Receives notifications?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      },
+      {
+        id: 303,
+        name: 'Henry Moore',
+        question: 'Has access rights?',
+        answer: 'na',
+        originalAnswer: 'na'
+      },
+      {
+        id: 304,
+        name: 'Iris Taylor',
+        question: 'Receives notifications?',
+        answer: 'maybe',
+        originalAnswer: 'maybe'
+      }
+    ]
+  },
+  {
+    id: 4,
+    name: 'Sarah Davis',
+    email: 'sarah.davis@example.com',
+    company: 'Innovation Labs',
+    beneficiaries: [
+      {
+        id: 401,
+        name: 'Jack Anderson',
+        question: 'Is primary beneficiary?',
+        answer: 'no',
+        originalAnswer: 'no'
+      }
+    ]
+  },
+  {
+    id: 5,
+    name: 'Robert Martinez',
+    email: 'robert.m@example.com',
+    company: 'Digital Dynamics',
+    beneficiaries: [
+      {
+        id: 501,
+        name: 'Karen Thomas',
+        question: 'Is primary beneficiary?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      },
+      {
+        id: 502,
+        name: 'Larry Jackson',
+        question: 'Receives notifications?',
+        answer: 'no',
+        originalAnswer: 'no'
+      },
+      {
+        id: 503,
+        name: 'Maria White',
+        question: 'Has access rights?',
+        answer: 'yes',
+        originalAnswer: 'yes'
+      }
+    ]
+  }
+];
 
 describe('CustomerTableComponent', () => {
   let component: CustomerTableComponent;
   let fixture: ComponentFixture<CustomerTableComponent>;
+  let customerService: jasmine.SpyObj<CustomerService>;
+  let loaderService: jasmine.SpyObj<LoaderService>;
 
   beforeEach(async () => {
+    const customerServiceSpy = jasmine.createSpyObj('CustomerService', ['getCustomers']);
+    const loaderServiceSpy = jasmine.createSpyObj('LoaderService', ['show', 'hide']);
+    
+    customerServiceSpy.getCustomers.and.returnValue(of(MOCK_CUSTOMERS));
+
     await TestBed.configureTestingModule({
       imports: [CustomerTableComponent, ReactiveFormsModule],
-      providers: [provideAnimations()]
+      providers: [
+        provideAnimations(),
+        { provide: CustomerService, useValue: customerServiceSpy },
+        { provide: LoaderService, useValue: loaderServiceSpy }
+      ]
     }).compileComponents();
+
+    customerService = TestBed.inject(CustomerService) as jasmine.SpyObj<CustomerService>;
+    loaderService = TestBed.inject(LoaderService) as jasmine.SpyObj<LoaderService>;
 
     fixture = TestBed.createComponent(CustomerTableComponent);
     component = fixture.componentInstance;
@@ -24,7 +175,19 @@ describe('CustomerTableComponent', () => {
   });
 
   describe('Initialization', () => {
-    it('should initialize customers from MOCK_CUSTOMERS', () => {
+    it('should call customer service on init', () => {
+      expect(customerService.getCustomers).toHaveBeenCalled();
+    });
+
+    it('should show loader when loading customers', () => {
+      expect(loaderService.show).toHaveBeenCalled();
+    });
+
+    it('should hide loader after customers are loaded', () => {
+      expect(loaderService.hide).toHaveBeenCalled();
+    });
+
+    it('should initialize customers from service', () => {
       expect(component.customers).toEqual(MOCK_CUSTOMERS);
     });
 
