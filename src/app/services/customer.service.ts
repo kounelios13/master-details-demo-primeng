@@ -2,147 +2,14 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Customer } from '../models/customer.model';
+import { MOCK_CUSTOMERS } from '../testing/mock-data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
-  private readonly MOCK_CUSTOMERS: Customer[] = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      company: 'Acme Corp',
-      beneficiaries: [
-        {
-          id: 101,
-          name: 'Alice Smith',
-          question: 'Is primary beneficiary?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        },
-        {
-          id: 102,
-          name: 'Bob Johnson',
-          question: 'Receives notifications?',
-          answer: 'no',
-          originalAnswer: 'no'
-        },
-        {
-          id: 103,
-          name: 'Carol Williams',
-          question: 'Has access rights?',
-          answer: 'maybe',
-          originalAnswer: 'maybe'
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      company: 'Tech Solutions Inc',
-      beneficiaries: [
-        {
-          id: 201,
-          name: 'David Brown',
-          question: 'Is primary beneficiary?',
-          answer: 'no',
-          originalAnswer: 'no'
-        },
-        {
-          id: 202,
-          name: 'Emma Davis',
-          question: 'Receives notifications?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Michael Johnson',
-      email: 'michael.j@example.com',
-      company: 'Global Enterprises',
-      beneficiaries: [
-        {
-          id: 301,
-          name: 'Frank Miller',
-          question: 'Is primary beneficiary?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        },
-        {
-          id: 302,
-          name: 'Grace Wilson',
-          question: 'Receives notifications?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        },
-        {
-          id: 303,
-          name: 'Henry Moore',
-          question: 'Has access rights?',
-          answer: 'na',
-          originalAnswer: 'na'
-        },
-        {
-          id: 304,
-          name: 'Iris Taylor',
-          question: 'Receives notifications?',
-          answer: 'maybe',
-          originalAnswer: 'maybe'
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: 'Sarah Davis',
-      email: 'sarah.davis@example.com',
-      company: 'Innovation Labs',
-      beneficiaries: [
-        {
-          id: 401,
-          name: 'Jack Anderson',
-          question: 'Is primary beneficiary?',
-          answer: 'no',
-          originalAnswer: 'no'
-        }
-      ]
-    },
-    {
-      id: 5,
-      name: 'Robert Martinez',
-      email: 'robert.m@example.com',
-      company: 'Digital Dynamics',
-      beneficiaries: [
-        {
-          id: 501,
-          name: 'Karen Thomas',
-          question: 'Is primary beneficiary?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        },
-        {
-          id: 502,
-          name: 'Larry Jackson',
-          question: 'Receives notifications?',
-          answer: 'no',
-          originalAnswer: 'no'
-        },
-        {
-          id: 503,
-          name: 'Maria White',
-          question: 'Has access rights?',
-          answer: 'yes',
-          originalAnswer: 'yes'
-        }
-      ]
-    }
-  ];
-
   getCustomers(): Observable<Customer[]> {
-    return of(this.MOCK_CUSTOMERS).pipe(
+    return of(MOCK_CUSTOMERS).pipe(
       delay(1500)
     );
   }
