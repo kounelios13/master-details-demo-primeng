@@ -136,7 +136,7 @@ Each beneficiary stores its original answer, allowing the application to:
 
 - `npm start` - Start development server (uses Nx)
 - `npm run build` - Build for production (uses Nx with caching)
-- `npm run watch` - Build and watch for changes
+- `npm run watch` - Build and watch for changes (uses Nx)
 - `npm test` - Run unit tests (uses Nx with caching)
 
 ### Nx-Specific Commands
