@@ -1,4 +1,5 @@
-import { Customer, Beneficiary, ANSWER_OPTIONS, MOCK_CUSTOMERS } from './customer.model';
+import { Customer, Beneficiary, ANSWER_OPTIONS } from './customer.model';
+import { MOCK_CUSTOMERS } from '../testing/mock-data';
 
 describe('Customer Model', () => {
   describe('Interfaces', () => {
