@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomerEntity } from '../entities/customer.entity';
@@ -7,7 +7,7 @@ import { UserEntity } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class SeedService implements OnModuleInit {
+export class SeedService {
   private readonly logger = new Logger(SeedService.name);
 
   constructor(
@@ -19,11 +19,7 @@ export class SeedService implements OnModuleInit {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async onModuleInit() {
-    await this.seedDatabase();
-  }
-
-  private async seedDatabase() {
+  async seedDatabase() {
     // Check if database is already seeded
     const customerCount = await this.customerRepository.count();
     if (customerCount > 0) {
@@ -33,14 +29,18 @@ export class SeedService implements OnModuleInit {
 
     this.logger.log('Seeding database...');
 
+    // Get credentials from environment variables or use defaults (for development only)
+    const defaultUsername = process.env['SEED_USERNAME'] || 'demo';
+    const defaultPassword = process.env['SEED_PASSWORD'] || 'demo123';
+
     // Create default user
-    const hashedPassword = await bcrypt.hash('demo123', 10);
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
     const user = this.userRepository.create({
-      username: 'demo',
+      username: defaultUsername,
       password: hashedPassword,
     });
     await this.userRepository.save(user);
-    this.logger.log('Created demo user (username: demo, password: demo123)');
+    this.logger.log(`Created user: ${defaultUsername}`);
 
     // Seed customers
     const customers = [

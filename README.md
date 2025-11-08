@@ -59,6 +59,19 @@ cd master-details-demo-primeng
 npm install
 ```
 
+3. **Configure environment variables** (API):
+```bash
+cd apps/customer-api
+cp .env.example .env
+# Edit .env and set JWT_SECRET to a secure random string
+```
+
+4. **Initialize the database** (first time only):
+```bash
+# Run the database seed command from the repository root
+npx ts-node apps/customer-api/src/app/cli/seed-database.ts
+```
+
 ## Running the Application
 
 ### Start the Backend API
@@ -69,9 +82,11 @@ npx nx serve customer-api
 
 The API will start on `http://localhost:3000/api`
 
-On first run, the database will be automatically seeded with:
-- **Demo user credentials:** `username: demo`, `password: demo123`
-- Sample customer data with beneficiaries
+**Important:** Set the `JWT_SECRET` environment variable before starting in production:
+```bash
+export JWT_SECRET="your-secure-random-secret-key"
+npx nx serve customer-api
+```
 
 ### Start the Frontend UI
 
@@ -83,9 +98,9 @@ The UI will start on `http://localhost:4200`
 
 ### Login
 
-Navigate to `http://localhost:4200` and login with:
-- **Username:** demo
-- **Password:** demo123
+Navigate to `http://localhost:4200` and login with the credentials you set during database initialization:
+- **Default Username:** demo
+- **Default Password:** demo123
 
 ## API Documentation
 
@@ -201,6 +216,7 @@ apps/customer-api/
 ├── src/
 │   ├── app/
 │   │   ├── auth/              # JWT authentication module
+│   │   ├── cli/               # CLI commands (database seeding)
 │   │   ├── customers/         # Customer management module
 │   │   ├── entities/          # TypeORM entities
 │   │   └── seed/              # Database seeding service
@@ -213,6 +229,7 @@ apps/customer-ui/
 │   │   │   ├── customer-table/    # Main table component
 │   │   │   └── login/             # Login component
 │   │   ├── guards/                # Route guards
+│   │   ├── interceptors/          # HTTP interceptors (auth token)
 │   │   ├── models/                # TypeScript interfaces
 │   │   ├── services/
 │   │   │   └── api/               # API service layer
@@ -237,17 +254,64 @@ The application uses SQLite for data persistence. The database file is located a
 
 ### Seeded Data
 
-On first run, the database is seeded with:
-- 1 demo user (username: demo, password: demo123)
+When you run the database seed command, it creates:
+- 1 user with credentials from environment variables (default: demo/demo123)
 - 5 customers with various beneficiaries
+
+## Environment Configuration
+
+### Backend (customer-api)
+
+Create `apps/customer-api/.env` file from the example:
+
+```bash
+cd apps/customer-api
+cp .env.example .env
+```
+
+Configure the following variables:
+
+```env
+# Required: Set to a secure random string in production
+JWT_SECRET=change-this-to-a-secure-random-string-in-production
+
+# Optional: Server port (default: 3000)
+PORT=3000
+
+# Optional: Database seed credentials (only used during initialization)
+SEED_USERNAME=demo
+SEED_PASSWORD=demo123
+```
+
+**Security Notes:**
+- ⚠️ Always set `JWT_SECRET` to a long, random string in production
+- ⚠️ Never commit `.env` files to version control (already in `.gitignore`)
+- ⚠️ Change default seed credentials in production environments
+- ⚠️ Use environment variables for all sensitive configuration
+- ✅ The application will warn you if `JWT_SECRET` is not set
+
+### Frontend (customer-ui)
+
+Edit `apps/customer-ui/src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api'
+};
+```
+
+For production, edit `environment.prod.ts` with your production API URL.
 
 ## Security Features
 
-- JWT-based authentication
+- JWT-based authentication with HTTP interceptor
 - Password hashing with bcrypt (10 salt rounds)
 - Protected API routes with JWT guard
 - CORS enabled for frontend communication
-- HTTP-only authentication flow
+- Environment-based configuration (no hardcoded secrets)
+- Secure token storage in localStorage with automatic injection via interceptor
+- CLI-based database initialization (not automatic on startup)
 
 ## Key Concepts
 

@@ -12,7 +12,10 @@ import { UserEntity } from '../entities/user.entity';
     TypeOrmModule.forFeature([UserEntity]),
     PassportModule,
     JwtModule.register({
-      secret: process.env['JWT_SECRET'] || 'your-secret-key-change-in-production',
+      secret: process.env['JWT_SECRET'] || (() => {
+        console.warn('WARNING: JWT_SECRET not set! Using insecure default. Set JWT_SECRET environment variable in production.');
+        return 'insecure-default-secret-change-immediately';
+      })(),
       signOptions: { expiresIn: '24h' },
     }),
   ],
