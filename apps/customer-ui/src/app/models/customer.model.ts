@@ -1,20 +1,7 @@
 import { FormControl, FormArray, FormGroup } from '@angular/forms';
 
-export interface Beneficiary {
-  id: number;
-  name: string;
-  question: string;
-  answer: string;
-  originalAnswer: string;
-}
-
-export interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  company: string;
-  beneficiaries: Beneficiary[];
-}
+// Re-export shared models
+export { Customer, Beneficiary, ANSWER_OPTIONS } from '@master-details-demo-primeng/shared-models';
 
 // Typed form interfaces
 export interface BeneficiaryForm {
@@ -36,10 +23,3 @@ export interface CustomerForm {
 export interface CustomersFormGroup {
   customers: FormArray<FormGroup<CustomerForm>>;
 }
-
-export const ANSWER_OPTIONS = [
-  { label: 'Yes', value: 'yes' },
-  { label: 'No', value: 'no' },
-  { label: 'Maybe', value: 'maybe' },
-  { label: 'N/A', value: 'na' }
-];

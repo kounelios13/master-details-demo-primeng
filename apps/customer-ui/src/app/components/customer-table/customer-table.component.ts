@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +10,7 @@ import { RippleModule } from 'primeng/ripple';
 import { Customer, Beneficiary, ANSWER_OPTIONS, BeneficiaryForm, CustomerForm, CustomersFormGroup } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
 import { LoaderService } from '../../services/loader.service';
+import { AuthService } from '../../services/api/auth.service';
 
 @Component({
   selector: 'app-customer-table',
@@ -29,6 +31,8 @@ export class CustomerTableComponent implements OnInit {
   private fb = inject(FormBuilder);
   private customerService = inject(CustomerService);
   private loaderService = inject(LoaderService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   
   customersForm!: FormGroup<CustomersFormGroup>;
   customers: Customer[] = [];
@@ -37,6 +41,11 @@ export class CustomerTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   private loadCustomers(): void {

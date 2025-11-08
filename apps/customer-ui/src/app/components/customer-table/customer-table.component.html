@@ -1,3 +1,12 @@
+<div class="container">
+  <header class="page-header">
+    <div>
+      <h1>Master-Details Demo with PrimeNG</h1>
+      <p class="subtitle">Angular 19 with Reactive Forms and PrimeNG Table Components</p>
+    </div>
+    <button pButton type="button" label="Logout" icon="pi pi-sign-out" (click)="logout()" class="p-button-secondary"></button>
+  </header>
+
 <div class="customer-table-container">
   <p-table
     [value]="customers"
@@ -131,4 +140,5 @@
       </tr>
     </ng-template>
   </p-table>
+</div>
 </div>
