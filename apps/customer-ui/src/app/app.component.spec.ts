@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { AppComponent } from './app.component';
-import { CustomerTableComponent } from './components/customer-table/customer-table.component';
+import { routes } from './app.routes';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -8,7 +9,8 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent, CustomerTableComponent]
+      imports: [AppComponent],
+      providers: [provideRouter(routes)]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -23,15 +25,9 @@ describe('AppComponent', () => {
     expect(component.title).toBe('Master-Details Demo with PrimeNG');
   });
 
-  it('should render the title in the template', () => {
+  it('should render router outlet', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Master-Details Demo with PrimeNG');
-  });
-
-  it('should include the customer table component', () => {
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-customer-table')).toBeTruthy();
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

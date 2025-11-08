@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { CustomerTableComponent } from './customer-table.component';
 import { Customer, Beneficiary } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
@@ -24,6 +27,9 @@ describe('CustomerTableComponent', () => {
       imports: [CustomerTableComponent, ReactiveFormsModule],
       providers: [
         provideAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         { provide: CustomerService, useValue: customerServiceSpy },
         { provide: LoaderService, useValue: loaderServiceSpy }
       ]
