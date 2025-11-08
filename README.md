@@ -64,11 +64,13 @@ npm install
 cd apps/customer-api
 cp .env.example .env
 # Edit .env and set JWT_SECRET to a secure random string
+# Also set SEED_USERNAME and SEED_PASSWORD for database initialization
 ```
 
 4. **Initialize the database** (first time only):
 ```bash
 # Run the database seed command from the repository root
+# Make sure SEED_USERNAME and SEED_PASSWORD are set in apps/customer-api/.env
 npx ts-node apps/customer-api/src/app/cli/seed-database.ts
 ```
 
@@ -98,9 +100,11 @@ The UI will start on `http://localhost:4200`
 
 ### Login
 
-Navigate to `http://localhost:4200` and login with the credentials you set during database initialization:
-- **Default Username:** demo
-- **Default Password:** demo123
+Navigate to `http://localhost:4200` and login with the credentials you configured in the `SEED_USERNAME` and `SEED_PASSWORD` environment variables during database initialization.
+
+**Example:** If you used the default values from `.env.example`:
+- **Username:** demo
+- **Password:** demo123
 
 ## API Documentation
 
@@ -255,7 +259,7 @@ The application uses SQLite for data persistence. The database file is located a
 ### Seeded Data
 
 When you run the database seed command, it creates:
-- 1 user with credentials from environment variables (default: demo/demo123)
+- 1 user with credentials from environment variables (`SEED_USERNAME` and `SEED_PASSWORD` must be set)
 - 5 customers with various beneficiaries
 
 ## Environment Configuration
@@ -278,7 +282,8 @@ JWT_SECRET=change-this-to-a-secure-random-string-in-production
 # Optional: Server port (default: 3000)
 PORT=3000
 
-# Optional: Database seed credentials (only used during initialization)
+# Required: Database seed credentials (only used during initialization)
+# These MUST be set before running the seed command
 SEED_USERNAME=demo
 SEED_PASSWORD=demo123
 ```
@@ -286,9 +291,11 @@ SEED_PASSWORD=demo123
 **Security Notes:**
 - ⚠️ Always set `JWT_SECRET` to a long, random string in production
 - ⚠️ Never commit `.env` files to version control (already in `.gitignore`)
-- ⚠️ Change default seed credentials in production environments
+- ⚠️ `SEED_USERNAME` and `SEED_PASSWORD` are required for database seeding - the seed command will fail if these are not set
+- ⚠️ Use strong, unique credentials for production environments
 - ⚠️ Use environment variables for all sensitive configuration
 - ✅ The application will warn you if `JWT_SECRET` is not set
+- ✅ The seed command will fail with a clear error if credentials are not provided
 
 ### Frontend (customer-ui)
 
