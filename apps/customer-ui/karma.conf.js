@@ -25,7 +25,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/master-details-demo-primeng'),
+      dir: require('path').join(__dirname, '../../coverage/customer-ui'),
       subdir: '.',
       reporters: [
         { type: 'html' },

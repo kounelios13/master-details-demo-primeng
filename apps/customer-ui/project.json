@@ -1,6 +1,6 @@
 {
-  "$schema": "node_modules/nx/schemas/project-schema.json",
-  "name": "master-details-demo-primeng",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "customer-ui",
   "projectType": "application",
   "generators": {
     "@schematics/angular:component": {
@@ -14,26 +14,26 @@
       "standalone": true
     }
   },
-  "sourceRoot": "src",
+  "sourceRoot": "apps/customer-ui/src",
   "prefix": "app",
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
       "options": {
-        "outputPath": "dist/master-details-demo-primeng",
-        "index": "src/index.html",
-        "browser": "src/main.ts",
+        "outputPath": "dist/apps/customer-ui",
+        "index": "apps/customer-ui/src/index.html",
+        "browser": "apps/customer-ui/src/main.ts",
         "polyfills": [
           "zone.js"
         ],
-        "tsConfig": "tsconfig.app.json",
+        "tsConfig": "apps/customer-ui/tsconfig.app.json",
         "assets": [
-          "src/favicon.ico",
-          "src/assets"
+          "apps/customer-ui/src/favicon.ico",
+          "apps/customer-ui/src/assets"
         ],
         "styles": [
           "node_modules/primeicons/primeicons.css",
-          "src/styles.css"
+          "apps/customer-ui/src/styles.css"
         ],
         "scripts": []
       },
@@ -68,10 +68,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "master-details-demo-primeng:build:production"
+          "buildTarget": "customer-ui:build:production"
         },
         "development": {
-          "buildTarget": "master-details-demo-primeng:build:development"
+          "buildTarget": "customer-ui:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -86,14 +86,14 @@
           "zone.js",
           "zone.js/testing"
         ],
-        "tsConfig": "tsconfig.spec.json",
-        "karmaConfig": "karma.conf.js",
+        "tsConfig": "apps/customer-ui/tsconfig.spec.json",
+        "karmaConfig": "apps/customer-ui/karma.conf.js",
         "assets": [
-          "src/favicon.ico",
-          "src/assets"
+          "apps/customer-ui/src/favicon.ico",
+          "apps/customer-ui/src/assets"
         ],
         "styles": [
-          "src/styles.css"
+          "apps/customer-ui/src/styles.css"
         ],
         "scripts": [],
         "browsers": "ChromeHeadlessCI"
