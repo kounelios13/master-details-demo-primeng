@@ -4,7 +4,6 @@ When creating a pull request:
 - Reference any related issues or tickets by including their numbers.
 - Ensure that your code follows the project's coding standards and guidelines.
 - Add appropriate labels to categorize the pull request (e.g., bug fix, feature, documentation).
-- Do not generate screenshots or images in the pull request description.
 - Ensure that all tests pass and include new tests if applicable.
 
 When creating a new function or method:
@@ -33,3 +32,5 @@ When tasked with creating a new API, focus on:
 - Make sure you use authentication
 - Use bcrypt or any better security standards for authentication authorization purposes
 - Use JWTs
+- For ids use UUID-v4 version
+  
