@@ -1,0 +1,144 @@
+<div class="container">
+  <header class="page-header">
+    <div>
+      <h1>Master-Details Demo with PrimeNG</h1>
+      <p class="subtitle">Angular 19 with Reactive Forms and PrimeNG Table Components</p>
+    </div>
+    <button pButton type="button" label="Logout" icon="pi pi-sign-out" (click)="logout()" class="p-button-secondary"></button>
+  </header>
+
+<div class="customer-table-container">
+  <p-table
+    [value]="customers"
+    dataKey="id"
+    [tableStyle]="{ 'min-width': '60rem' }">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem"></th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Company</th>
+        <th>Beneficiaries</th>
+        <th>Status</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-customer let-index="rowIndex" let-expanded="expanded">
+      <tr>
+        <td>
+          <button
+            type="button"
+            pButton
+            pRipple
+            [pRowToggler]="customer"
+            class="p-button-text p-button-rounded p-button-plain"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+          </button>
+        </td>
+        <td>{{ customer.name }}</td>
+        <td>{{ customer.email }}</td>
+        <td>{{ customer.company }}</td>
+        <td>
+          <span class="beneficiary-count">
+            {{ getBeneficiaryCount(index) }}
+          </span>
+        </td>
+        <td>
+          @if (hasChanges(index)) {
+            <span
+              class="status-badge status-changed"
+              pTooltip="Has unsaved changes">
+              {{ getChangedCount(index) }} changed
+            </span>
+          } @else {
+            <span
+              class="status-badge status-saved">
+              Saved
+            </span>
+          }
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="expandedrow" let-customer let-index="rowIndex">
+      <tr>
+        <td colspan="6">
+          <div class="beneficiaries-container">
+            <div class="beneficiaries-header">
+              <h3>Beneficiaries</h3>
+            </div>
+            
+            <p-table
+              [value]="getBeneficiariesArray(index).controls"
+              [tableStyle]="{ 'min-width': '50rem' }">
+              
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Name</th>
+                  <th>Question</th>
+                  <th style="width: 200px">Answer</th>
+                  <th style="width: 100px">Actions</th>
+                </tr>
+              </ng-template>
+              
+              <ng-template pTemplate="body" let-beneficiaryControl let-beneficiaryIndex="rowIndex">
+                <tr [class.row-changed]="isBeneficiaryChanged(index, beneficiaryIndex)">
+                  <td>{{ beneficiaryControl.get('name')?.value }}</td>
+                  <td>{{ beneficiaryControl.get('question')?.value }}</td>
+                  <td>
+                    <p-select
+                      [formControl]="beneficiaryControl.get('answer')"
+                      [options]="answerOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Select an answer"
+                      [style]="{ width: '100%' }"
+                      appendTo="body">
+                    </p-select>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-check"
+                        class="p-button-rounded p-button-success p-button-text"
+                        [disabled]="!isBeneficiaryChanged(index, beneficiaryIndex)"
+                        (click)="saveBeneficiary(index, beneficiaryIndex)"
+                        pTooltip="Save changes">
+                      </button>
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-refresh"
+                        class="p-button-rounded p-button-warning p-button-text"
+                        [disabled]="!isBeneficiaryChanged(index, beneficiaryIndex)"
+                        (click)="resetBeneficiary(index, beneficiaryIndex)"
+                        pTooltip="Reset to original">
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+            
+            <div class="beneficiaries-footer">
+              @if (hasChanges(index)) {
+                <button
+                  pButton
+                  type="button"
+                  label="Save All Changes"
+                  icon="pi pi-save"
+                  class="p-button-success"
+                  (click)="saveAllChanges(index)">
+                </button>
+              }
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+</div>

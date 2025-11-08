@@ -1,0 +1,48 @@
+<div class="login-container">
+  <p-card header="Login" class="login-card">
+    <div class="login-form">
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage"></p-message>
+      }
+      
+      <div class="field">
+        <label for="username">Username</label>
+        <input 
+          id="username" 
+          type="text" 
+          pInputText 
+          [(ngModel)]="username" 
+          placeholder="demo"
+          class="w-full"
+        />
+      </div>
+      
+      <div class="field">
+        <label for="password">Password</label>
+        <p-password 
+          id="password" 
+          [(ngModel)]="password" 
+          placeholder="demo123"
+          [feedback]="false"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        ></p-password>
+      </div>
+      
+      <div class="field">
+        <p-button 
+          label="Login" 
+          icon="pi pi-sign-in" 
+          (onClick)="login()"
+          styleClass="w-full"
+        ></p-button>
+      </div>
+      
+      <div class="demo-info">
+        <p><strong>Demo credentials:</strong></p>
+        <p>Username: demo</p>
+        <p>Password: demo123</p>
+      </div>
+    </div>
+  </p-card>
+</div>

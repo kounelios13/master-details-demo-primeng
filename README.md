@@ -1,17 +1,45 @@
-# Master-Details Demo with PrimeNG
+# Master-Details Demo with PrimeNG - Nx Monorepo
 
-Angular 19 application demonstrating master-details pattern with reactive forms and PrimeNG table components.
+Angular 19 + NestJS full-stack application demonstrating master-details pattern with reactive forms, REST API, and JWT authentication.
+
+## Architecture Overview
+
+This project is organized as an **Nx monorepo** with clear separation of concerns:
+
+```
+apps/
+├── customer-ui/          # Angular 19 frontend application
+└── customer-api/         # NestJS backend API with SQLite database
+
+libs/
+└── shared-models/        # Shared TypeScript models used by both frontend and backend
+```
 
 ## Features
 
+### Frontend (Angular)
 - ✅ Angular 19 with standalone components
 - ✅ PrimeNG table with expandable rows (master-details pattern)
 - ✅ Reactive Forms with nested FormArrays
+- ✅ JWT authentication with login page
+- ✅ HTTP client integration with REST API
 - ✅ Inline editing with dropdowns
 - ✅ Change tracking and validation
 - ✅ Individual and bulk save operations
 - ✅ Reset functionality for unsaved changes
-- ✅ Nx monorepo for scalable development
+
+### Backend (NestJS)
+- ✅ NestJS REST API
+- ✅ SQLite database with TypeORM
+- ✅ JWT authentication with Passport
+- ✅ Password hashing with bcrypt
+- ✅ Automatic database seeding
+- ✅ Protected API endpoints
+- ✅ CORS enabled
+
+### Shared
+- ✅ TypeScript models shared between frontend and backend
+- ✅ Nx monorepo for scalable development with intelligent caching
 
 ## Prerequisites
 
@@ -31,87 +59,259 @@ cd master-details-demo-primeng
 npm install
 ```
 
-3. Start the development server:
+3. **Configure environment variables** (API):
 ```bash
-npm start
+cd apps/customer-api
+cp .env.example .env
+# Edit .env and set JWT_SECRET to a secure random string
 ```
 
-4. Open your browser and navigate to `http://localhost:4200`
-
-## Nx Workspace
-
-This project uses **Nx** for monorepo management, providing:
-- **Intelligent caching** - Builds and tests are cached for faster execution
-- **Project graph** - Understand dependencies between projects
-- **Generators** - Scaffold new applications and libraries quickly
-- **Scalability** - Easy to add new projects (APIs, libraries, etc.)
-
-### Adding a New API Project
-
-To add a new API project to this workspace:
-
+4. **Initialize the database** (first time only):
 ```bash
-# For a Node.js/Express API
-npx nx g @nx/express:application api
-
-# For a NestJS API
-npx nx g @nx/nest:application api
+# Run the database seed command from the repository root
+npx ts-node apps/customer-api/src/app/cli/seed-database.ts
 ```
 
-### Working with Multiple Projects
+## Running the Application
+
+### Start the Backend API
 
 ```bash
-# Run commands for specific projects
-npx nx build master-details-demo-primeng
-npx nx test master-details-demo-primeng
+npx nx serve customer-api
+```
 
-# Run commands for all projects
-npx nx run-many -t build
-npx nx run-many -t test
+The API will start on `http://localhost:3000/api`
 
-# View the project graph
-npx nx graph
+**Important:** Set the `JWT_SECRET` environment variable before starting in production:
+```bash
+export JWT_SECRET="your-secure-random-secret-key"
+npx nx serve customer-api
+```
+
+### Start the Frontend UI
+
+```bash
+npx nx serve customer-ui
+```
+
+The UI will start on `http://localhost:4200`
+
+### Login
+
+Navigate to `http://localhost:4200` and login with the credentials you set during database initialization:
+- **Default Username:** demo
+- **Default Password:** demo123
+
+## API Documentation
+
+### Authentication Endpoints
+
+#### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo123"
+}
+```
+
+Response:
+```json
+{
+  "access_token": "jwt-token-string",
+  "username": "demo"
+}
+```
+
+#### Register
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "password": "password123"
+}
+```
+
+### Customer Endpoints
+
+All customer endpoints require JWT authentication via Bearer token.
+
+#### Get all customers
+```http
+GET /api/customers
+Authorization: Bearer {jwt-token}
+```
+
+#### Get a single customer
+```http
+GET /api/customers/:id
+Authorization: Bearer {jwt-token}
+```
+
+#### Create a customer
+```http
+POST /api/customers
+Authorization: Bearer {jwt-token}
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "company": "Acme Corp",
+  "beneficiaries": []
+}
+```
+
+#### Update a customer
+```http
+PUT /api/customers/:id
+Authorization: Bearer {jwt-token}
+Content-Type: application/json
+
+{
+  "name": "John Doe Updated"
+}
+```
+
+#### Delete a customer
+```http
+DELETE /api/customers/:id
+Authorization: Bearer {jwt-token}
+```
+
+## Building for Production
+
+Build all projects:
+```bash
+npx nx run-many --target=build --all
+```
+
+Build individual projects:
+```bash
+npx nx build customer-api
+npx nx build customer-ui
+```
+
+## Running Tests
+
+Run all tests:
+```bash
+npx nx run-many --target=test --all
+```
+
+Run tests for specific project:
+```bash
+npx nx test customer-api
+npx nx test customer-ui
 ```
 
 ## Project Structure
 
 ```
-src/
-├── app/
-│   ├── models/
-│   │   └── customer.model.ts          # Data models and interfaces
-│   ├── components/
-│   │   └── customer-table/
-│   │       ├── customer-table.component.ts
-│   │       ├── customer-table.component.html
-│   │       └── customer-table.component.css
-│   ├── app.component.ts
-│   ├── app.component.html
-│   ├── app.config.ts
-│   └── app.routes.ts
-├── index.html
-├── main.ts
-└── styles.css
+apps/customer-api/
+├── src/
+│   ├── app/
+│   │   ├── auth/              # JWT authentication module
+│   │   ├── cli/               # CLI commands (database seeding)
+│   │   ├── customers/         # Customer management module
+│   │   ├── entities/          # TypeORM entities
+│   │   └── seed/              # Database seeding service
+│   └── main.ts
 
-Configuration files:
-├── nx.json               # Nx workspace configuration
-├── project.json          # Project-specific configuration
-└── package.json          # Dependencies and scripts
+apps/customer-ui/
+├── src/
+│   ├── app/
+│   │   ├── components/
+│   │   │   ├── customer-table/    # Main table component
+│   │   │   └── login/             # Login component
+│   │   ├── guards/                # Route guards
+│   │   ├── interceptors/          # HTTP interceptors (auth token)
+│   │   ├── models/                # TypeScript interfaces
+│   │   ├── services/
+│   │   │   └── api/               # API service layer
+│   │   └── app.routes.ts
+│   └── environments/              # Environment configuration
+
+libs/shared-models/
+└── src/
+    └── lib/
+        └── customer.model.ts      # Shared type definitions
 ```
 
-## Usage
+## Database
 
-### Master Table
-- View list of customers
-- See beneficiary count and change status
-- Expand rows to see beneficiary details
+The application uses SQLite for data persistence. The database file is located at `data/database.sqlite`.
 
-### Details Grid (Beneficiaries)
-- Edit beneficiary answers using dropdowns
-- Save individual changes with the check button
-- Reset individual changes with the refresh button
-- Save all changes for a customer with "Save All Changes" button
-- Visual indicators for changed rows
+### Schema
+
+- **users**: User authentication (id, username, password)
+- **customers**: Customer information (id, name, email, company)
+- **beneficiaries**: Customer beneficiaries (id, name, question, answer, originalAnswer, customerId)
+
+### Seeded Data
+
+When you run the database seed command, it creates:
+- 1 user with credentials from environment variables (default: demo/demo123)
+- 5 customers with various beneficiaries
+
+## Environment Configuration
+
+### Backend (customer-api)
+
+Create `apps/customer-api/.env` file from the example:
+
+```bash
+cd apps/customer-api
+cp .env.example .env
+```
+
+Configure the following variables:
+
+```env
+# Required: Set to a secure random string in production
+JWT_SECRET=change-this-to-a-secure-random-string-in-production
+
+# Optional: Server port (default: 3000)
+PORT=3000
+
+# Optional: Database seed credentials (only used during initialization)
+SEED_USERNAME=demo
+SEED_PASSWORD=demo123
+```
+
+**Security Notes:**
+- ⚠️ Always set `JWT_SECRET` to a long, random string in production
+- ⚠️ Never commit `.env` files to version control (already in `.gitignore`)
+- ⚠️ Change default seed credentials in production environments
+- ⚠️ Use environment variables for all sensitive configuration
+- ✅ The application will warn you if `JWT_SECRET` is not set
+
+### Frontend (customer-ui)
+
+Edit `apps/customer-ui/src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api'
+};
+```
+
+For production, edit `environment.prod.ts` with your production API URL.
+
+## Security Features
+
+- JWT-based authentication with HTTP interceptor
+- Password hashing with bcrypt (10 salt rounds)
+- Protected API routes with JWT guard
+- CORS enabled for frontend communication
+- Environment-based configuration (no hardcoded secrets)
+- Secure token storage in localStorage with automatic injection via interceptor
+- CLI-based database initialization (not automatic on startup)
 
 ## Key Concepts
 
@@ -132,28 +332,69 @@ Each beneficiary stores its original answer, allowing the application to:
 - Reset changes to original values
 - Show visual indicators for modified rows
 
-## Available Scripts
+## Nx Workspace Commands
 
-- `npm start` - Start development server (uses Nx)
-- `npm run build` - Build for production (uses Nx with caching)
-- `npm run watch` - Build and watch for changes (uses Nx)
-- `npm test` - Run unit tests (uses Nx with caching)
-
-### Nx-Specific Commands
-
+### Development
+- `npx nx serve customer-api` - Start the backend API
+- `npx nx serve customer-ui` - Start the frontend application
 - `npx nx graph` - View the interactive project dependency graph
-- `npx nx show projects` - List all projects in the workspace
+
+### Building
+- `npx nx build customer-api` - Build the API
+- `npx nx build customer-ui` - Build the UI
 - `npx nx run-many -t build` - Build all projects
+
+### Testing
+- `npx nx test customer-api` - Test the API
+- `npx nx test customer-ui` - Test the UI
+- `npx nx run-many -t test` - Test all projects
 - `npx nx affected -t test` - Test only affected projects
+
+### Other Commands
+- `npx nx show projects` - List all projects
 - `npx nx reset` - Clear Nx cache
 
 ## Technologies
 
+### Frontend
 - **Angular 19** - Latest Angular framework with standalone components
 - **PrimeNG 19** - Rich UI component library
 - **TypeScript 5.5** - Typed superset of JavaScript
 - **Reactive Forms** - Angular's model-driven form approach
+
+### Backend
+- **NestJS** - Progressive Node.js framework
+- **TypeORM** - ORM for TypeScript and JavaScript
+- **SQLite** - Lightweight SQL database
+- **Passport JWT** - Authentication middleware
+- **bcrypt** - Password hashing
+
+### Build System
 - **Nx 22** - Smart monorepo build system with caching
+
+## Troubleshooting
+
+### Database Issues
+If you encounter database errors, delete the database file and restart the API:
+```bash
+rm data/database.sqlite
+npx nx serve customer-api
+```
+
+### Port Conflicts
+If ports 3000 or 4200 are already in use:
+
+**API:**
+```bash
+PORT=3001 npx nx serve customer-api
+```
+
+**UI:**
+```bash
+npx nx serve customer-ui --port 4201
+```
+
+Then update `apps/customer-ui/src/environments/environment.ts` with the new API URL.
 
 ## License
 

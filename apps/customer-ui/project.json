@@ -1,0 +1,103 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "customer-ui",
+  "projectType": "application",
+  "generators": {
+    "@schematics/angular:component": {
+      "style": "css",
+      "standalone": true
+    },
+    "@schematics/angular:directive": {
+      "standalone": true
+    },
+    "@schematics/angular:pipe": {
+      "standalone": true
+    }
+  },
+  "sourceRoot": "apps/customer-ui/src",
+  "prefix": "app",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "options": {
+        "outputPath": "dist/apps/customer-ui",
+        "index": "apps/customer-ui/src/index.html",
+        "browser": "apps/customer-ui/src/main.ts",
+        "polyfills": [
+          "zone.js"
+        ],
+        "tsConfig": "apps/customer-ui/tsconfig.app.json",
+        "assets": [
+          "apps/customer-ui/src/favicon.ico",
+          "apps/customer-ui/src/assets"
+        ],
+        "styles": [
+          "node_modules/primeicons/primeicons.css",
+          "apps/customer-ui/src/styles.css"
+        ],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1.5mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production",
+      "outputs": [
+        "{options.outputPath}"
+      ]
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "customer-ui:build:production"
+        },
+        "development": {
+          "buildTarget": "customer-ui:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n"
+    },
+    "test": {
+      "executor": "@angular-devkit/build-angular:karma",
+      "options": {
+        "polyfills": [
+          "zone.js",
+          "zone.js/testing"
+        ],
+        "tsConfig": "apps/customer-ui/tsconfig.spec.json",
+        "karmaConfig": "apps/customer-ui/karma.conf.js",
+        "assets": [
+          "apps/customer-ui/src/favicon.ico",
+          "apps/customer-ui/src/assets"
+        ],
+        "styles": [
+          "apps/customer-ui/src/styles.css"
+        ],
+        "scripts": [],
+        "browsers": "ChromeHeadlessCI"
+      }
+    }
+  }
+}

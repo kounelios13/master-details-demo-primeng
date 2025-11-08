@@ -44,3 +44,12 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+
+# Database files
+/data/*.sqlite
+/data/*.sqlite-*
+
+# Environment files
+.env
+.env.local
+.env.*.local
