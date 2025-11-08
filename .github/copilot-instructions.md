@@ -24,3 +24,12 @@ When reviewing code, focus on:
 - Look for SQL injection and XSS vulnerabilities
 - Verify proper input validation and sanitization
 - Review authentication and authorization logic
+
+When tasked with creating a new API, focus on:
+- Create a new nx project for that api 
+- Write unit tests for that api
+- Use sqlite for db purposes
+- Use nestjs for the API
+- Make sure you use authentication
+- Use bcrypt or any better security standards for authentication authorization purposes
+- Use JWTs
