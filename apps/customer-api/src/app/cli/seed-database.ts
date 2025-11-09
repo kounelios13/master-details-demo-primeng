@@ -1,6 +1,12 @@
+import 'reflect-metadata';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { SeedService } from '../seed/seed.service';
+
+// Load environment variables from .env file
+dotenv.config({ path: resolve(process.cwd(), 'apps/customer-api/.env') });
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);

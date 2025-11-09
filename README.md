@@ -71,7 +71,7 @@ cp .env.example .env
 ```bash
 # Run the database seed command from the repository root
 # Make sure SEED_USERNAME and SEED_PASSWORD are set in apps/customer-api/.env
-npx ts-node apps/customer-api/src/app/cli/seed-database.ts
+npm run seed
 ```
 
 ## Running the Application
