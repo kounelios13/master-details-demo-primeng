@@ -6,7 +6,6 @@ import { provideRouter } from '@angular/router';
 import { CustomerTableComponent } from './customer-table.component';
 import { Customer, Beneficiary } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
-import { LoaderService } from '../../services/loader.service';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MOCK_CUSTOMERS } from '../../testing/mock-data';
@@ -15,7 +14,6 @@ describe('CustomerTableComponent', () => {
   let component: CustomerTableComponent;
   let fixture: ComponentFixture<CustomerTableComponent>;
   let customerService: jasmine.SpyObj<CustomerService>;
-  let loaderService: jasmine.SpyObj<LoaderService>;
 
   beforeEach(async () => {
     const customerServiceSpy = jasmine.createSpyObj('CustomerService', [
@@ -27,7 +25,6 @@ describe('CustomerTableComponent', () => {
       'updateBeneficiary',
       'deleteBeneficiary'
     ]);
-    const loaderServiceSpy = jasmine.createSpyObj('LoaderService', ['show', 'hide']);
     
     customerServiceSpy.getCustomers.and.returnValue(of(MOCK_CUSTOMERS));
     customerServiceSpy.updateBeneficiary.and.returnValue(of({} as Beneficiary));
@@ -43,13 +40,11 @@ describe('CustomerTableComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-        { provide: CustomerService, useValue: customerServiceSpy },
-        { provide: LoaderService, useValue: loaderServiceSpy }
+        { provide: CustomerService, useValue: customerServiceSpy }
       ]
     }).compileComponents();
 
     customerService = TestBed.inject(CustomerService) as jasmine.SpyObj<CustomerService>;
-    loaderService = TestBed.inject(LoaderService) as jasmine.SpyObj<LoaderService>;
 
     fixture = TestBed.createComponent(CustomerTableComponent);
     component = fixture.componentInstance;
@@ -63,14 +58,6 @@ describe('CustomerTableComponent', () => {
   describe('Initialization', () => {
     it('should call customer service on init', () => {
       expect(customerService.getCustomers).toHaveBeenCalled();
-    });
-
-    it('should show loader when loading customers', () => {
-      expect(loaderService.show).toHaveBeenCalled();
-    });
-
-    it('should hide loader after customers are loaded', () => {
-      expect(loaderService.hide).toHaveBeenCalled();
     });
 
     it('should initialize customers from service', () => {

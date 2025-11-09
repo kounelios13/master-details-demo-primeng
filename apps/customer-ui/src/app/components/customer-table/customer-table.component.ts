@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -11,7 +11,6 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Customer, Beneficiary, ANSWER_OPTIONS, BeneficiaryForm, CustomerForm, CustomersFormGroup } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
-import { LoaderService } from '../../services/loader.service';
 import { AuthService } from '../../services/api/auth.service';
 
 @Component({
@@ -34,7 +33,6 @@ import { AuthService } from '../../services/api/auth.service';
 export class CustomerTableComponent implements OnInit {
   private fb = inject(FormBuilder);
   private customerService = inject(CustomerService);
-  private loaderService = inject(LoaderService);
   private authService = inject(AuthService);
   private router = inject(Router);
   
@@ -73,16 +71,13 @@ export class CustomerTableComponent implements OnInit {
   }
 
   private loadCustomers(): void {
-    this.loaderService.show();
     this.customerService.getCustomers().subscribe({
       next: (customers) => {
         this.customers = customers;
         this.initForm();
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error loading customers:', error);
-        this.loaderService.hide();
       }
     });
   }
@@ -156,15 +151,12 @@ export class CustomerTableComponent implements OnInit {
     const beneficiaryId = beneficiary.controls.id.value;
     const answer = beneficiary.controls.answer.value;
     
-    this.loaderService.show();
     this.customerService.updateBeneficiary(beneficiaryId, { answer }).subscribe({
       next: () => {
         beneficiary.patchValue({ originalAnswer: answer });
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error saving beneficiary:', error);
-        this.loaderService.hide();
       }
     });
   }
@@ -190,7 +182,6 @@ export class CustomerTableComponent implements OnInit {
 
     if (updates.length === 0) return;
 
-    this.loaderService.show();
     let completed = 0;
     
     updates.forEach(update => {
@@ -202,12 +193,10 @@ export class CustomerTableComponent implements OnInit {
               const answer = beneficiary.controls.answer.value;
               beneficiary.patchValue({ originalAnswer: answer });
             });
-            this.loaderService.hide();
           }
         },
         error: (error) => {
           console.error('Error saving beneficiary:', error);
-          this.loaderService.hide();
         }
       });
     });
@@ -248,16 +237,13 @@ export class CustomerTableComponent implements OnInit {
       beneficiaries: []
     };
 
-    this.loaderService.show();
     this.customerService.createCustomer(customerData).subscribe({
       next: () => {
         this.loadCustomers();
         this.closeCustomerDialog();
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error creating customer:', error);
-        this.loaderService.hide();
       }
     });
   }
@@ -270,15 +256,12 @@ export class CustomerTableComponent implements OnInit {
       return;
     }
 
-    this.loaderService.show();
     this.customerService.deleteCustomer(customerId).subscribe({
       next: () => {
         this.loadCustomers();
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error deleting customer:', error);
-        this.loaderService.hide();
       }
     });
   }
@@ -309,16 +292,13 @@ export class CustomerTableComponent implements OnInit {
       originalAnswer: this.beneficiaryForm.value.answer!
     };
 
-    this.loaderService.show();
     this.customerService.addBeneficiary(customerId, beneficiaryData).subscribe({
       next: () => {
         this.loadCustomers();
         this.closeBeneficiaryDialog();
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error adding beneficiary:', error);
-        this.loaderService.hide();
       }
     });
   }
@@ -331,15 +311,12 @@ export class CustomerTableComponent implements OnInit {
       return;
     }
 
-    this.loaderService.show();
     this.customerService.deleteBeneficiary(beneficiaryId).subscribe({
       next: () => {
         this.loadCustomers();
-        this.loaderService.hide();
       },
       error: (error) => {
         console.error('Error deleting beneficiary:', error);
-        this.loaderService.hide();
       }
     });
   }
