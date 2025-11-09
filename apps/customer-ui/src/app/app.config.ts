@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
@@ -21,6 +22,8 @@ export const appConfig: ApplicationConfig = {
           darkModeSelector: false
         }
       }
-    })
+    }),
+    MessageService, // Provide MessageService for notifications
+    ConfirmationService // Provide ConfirmationService for confirm dialogs
   ]
 };

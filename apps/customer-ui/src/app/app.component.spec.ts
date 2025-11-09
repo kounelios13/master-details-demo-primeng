@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { AppComponent } from './app.component';
 import { routes } from './app.routes';
 
@@ -10,7 +11,11 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter(routes)]
+      providers: [
+        provideRouter(routes),
+        MessageService,
+        ConfirmationService
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);

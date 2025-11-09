@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmationService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -12,7 +13,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Customer, Beneficiary, ANSWER_OPTIONS, BeneficiaryForm, CustomerForm, CustomersFormGroup } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
 import { AuthService } from '../../services/api/auth.service';
+import { NotificationService } from '../../services/ui/notification.service';
+import { ErrorHandlingService } from '../../services/ui/error-handling.service';
 
+/**
+ * Component displaying customer table with expandable beneficiary rows
+ * Includes inline editing, CRUD operations, and change tracking
+ */
 @Component({
   selector: 'app-customer-table',
   standalone: true,
@@ -35,6 +42,9 @@ export class CustomerTableComponent implements OnInit {
   private customerService = inject(CustomerService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
+  private errorHandler = inject(ErrorHandlingService);
+  private confirmationService = inject(ConfirmationService);
   
   customersForm!: FormGroup<CustomersFormGroup>;
   customers: Customer[] = [];
@@ -65,11 +75,18 @@ export class CustomerTableComponent implements OnInit {
     this.loadCustomers();
   }
 
+  /**
+   * Log out the current user and navigate to login
+   */
   logout(): void {
     this.authService.logout();
+    this.notificationService.info('Logged out', 'You have been successfully logged out');
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Load all customers from the API
+   */
   private loadCustomers(): void {
     this.customerService.getCustomers().subscribe({
       next: (customers) => {
@@ -77,7 +94,8 @@ export class CustomerTableComponent implements OnInit {
         this.initForm();
       },
       error: (error) => {
-        console.error('Error loading customers:', error);
+        this.errorHandler.logError(error, 'Load Customers');
+        this.notificationService.handleError(error, 'Failed to load customers');
       }
     });
   }
@@ -157,9 +175,11 @@ export class CustomerTableComponent implements OnInit {
     this.customerService.updateBeneficiary(beneficiaryId, { answer }).subscribe({
       next: () => {
         beneficiary.patchValue({ originalAnswer: answer });
+        this.notificationService.success('Saved', 'Beneficiary updated successfully');
       },
       error: (error) => {
-        console.error('Error saving beneficiary:', error);
+        this.errorHandler.logError(error, 'Save Beneficiary');
+        this.notificationService.handleError(error, 'Failed to save beneficiary');
       }
     });
   }
@@ -168,6 +188,7 @@ export class CustomerTableComponent implements OnInit {
     const beneficiary = this.getBeneficiaryFormGroup(customerIndex, beneficiaryIndex);
     const originalAnswer = beneficiary.controls.originalAnswer.value;
     beneficiary.patchValue({ answer: originalAnswer });
+    this.notificationService.info('Reset', 'Changes have been discarded');
   }
 
   saveAllChanges(customerIndex: number): void {
@@ -186,20 +207,34 @@ export class CustomerTableComponent implements OnInit {
     if (updates.length === 0) return;
 
     let completed = 0;
+    let failed = 0;
     
     updates.forEach(update => {
       this.customerService.updateBeneficiary(update.id, { answer: update.answer }).subscribe({
         next: () => {
           completed++;
-          if (completed === updates.length) {
-            beneficiaries.controls.forEach(beneficiary => {
-              const answer = beneficiary.controls.answer.value;
-              beneficiary.patchValue({ originalAnswer: answer });
-            });
+          if (completed + failed === updates.length) {
+            if (failed === 0) {
+              beneficiaries.controls.forEach(beneficiary => {
+                const answer = beneficiary.controls.answer.value;
+                beneficiary.patchValue({ originalAnswer: answer });
+              });
+              this.notificationService.success('Saved', `All ${completed} changes saved successfully`);
+            } else {
+              this.notificationService.warning('Partially Saved', `${completed} saved, ${failed} failed`);
+            }
           }
         },
         error: (error) => {
-          console.error('Error saving beneficiary:', error);
+          failed++;
+          this.errorHandler.logError(error, 'Save All Changes');
+          if (completed + failed === updates.length) {
+            if (failed === updates.length) {
+              this.notificationService.handleError(error, 'Failed to save changes');
+            } else {
+              this.notificationService.warning('Partially Saved', `${completed} saved, ${failed} failed`);
+            }
+          }
         }
       });
     });
@@ -231,12 +266,15 @@ export class CustomerTableComponent implements OnInit {
   }
 
   saveCustomer(): void {
-    if (this.customerForm.invalid) return;
+    if (this.customerForm.invalid) {
+      this.notificationService.warning('Invalid Form', 'Please fill in all required fields correctly');
+      return;
+    }
 
     const customerData = {
-      name: this.customerForm.value.name!,
-      email: this.customerForm.value.email!,
-      company: this.customerForm.value.company!,
+      name: this.customerForm.value.name ?? '',
+      email: this.customerForm.value.email ?? '',
+      company: this.customerForm.value.company ?? '',
       beneficiaries: []
     };
 
@@ -244,27 +282,41 @@ export class CustomerTableComponent implements OnInit {
       next: () => {
         this.loadCustomers();
         this.closeCustomerDialog();
+        this.notificationService.success('Customer Added', 'New customer created successfully');
       },
       error: (error) => {
-        console.error('Error creating customer:', error);
+        this.errorHandler.logError(error, 'Create Customer');
+        this.notificationService.handleError(error, 'Failed to create customer');
       }
     });
   }
 
+  /**
+   * Delete a customer with confirmation dialog
+   */
   deleteCustomer(customerIndex: number): void {
     const customer = this.getCustomerFormGroup(customerIndex);
     const customerId = customer.controls.id.value;
+    const customerName = customer.controls.name.value;
     
-    if (!confirm(`Are you sure you want to delete ${customer.controls.name.value}?`)) {
-      return;
-    }
-
-    this.customerService.deleteCustomer(customerId).subscribe({
-      next: () => {
-        this.loadCustomers();
-      },
-      error: (error) => {
-        console.error('Error deleting customer:', error);
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete ${customerName}? This will also delete all associated beneficiaries.`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Yes, Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.customerService.deleteCustomer(customerId).subscribe({
+          next: () => {
+            this.loadCustomers();
+            this.notificationService.success('Customer Deleted', `${customerName} has been deleted`);
+          },
+          error: (error) => {
+            this.errorHandler.logError(error, 'Delete Customer');
+            this.notificationService.handleError(error, 'Failed to delete customer');
+          }
+        });
       }
     });
   }
@@ -283,43 +335,60 @@ export class CustomerTableComponent implements OnInit {
   }
 
   saveBeneficiaryNew(): void {
-    if (this.beneficiaryForm.invalid || this.currentCustomerIndex === -1) return;
+    if (this.beneficiaryForm.invalid || this.currentCustomerIndex === -1) {
+      this.notificationService.warning('Invalid Form', 'Please fill in all required fields');
+      return;
+    }
 
     const customer = this.getCustomerFormGroup(this.currentCustomerIndex);
     const customerId = customer.controls.id.value;
 
     const beneficiaryData = {
-      name: this.beneficiaryForm.value.name!,
-      question: this.beneficiaryForm.value.question!,
-      answer: this.beneficiaryForm.value.answer!,
-      originalAnswer: this.beneficiaryForm.value.answer!
+      name: this.beneficiaryForm.value.name ?? '',
+      question: this.beneficiaryForm.value.question ?? '',
+      answer: this.beneficiaryForm.value.answer ?? 'yes',
+      originalAnswer: this.beneficiaryForm.value.answer ?? 'yes'
     };
 
     this.customerService.addBeneficiary(customerId, beneficiaryData).subscribe({
       next: () => {
         this.loadCustomers();
         this.closeBeneficiaryDialog();
+        this.notificationService.success('Beneficiary Added', 'New beneficiary created successfully');
       },
       error: (error) => {
-        console.error('Error adding beneficiary:', error);
+        this.errorHandler.logError(error, 'Add Beneficiary');
+        this.notificationService.handleError(error, 'Failed to add beneficiary');
       }
     });
   }
 
+  /**
+   * Delete a beneficiary with confirmation dialog
+   */
   deleteBeneficiary(customerIndex: number, beneficiaryIndex: number): void {
     const beneficiary = this.getBeneficiaryFormGroup(customerIndex, beneficiaryIndex);
     const beneficiaryId = beneficiary.controls.id.value;
+    const beneficiaryName = beneficiary.controls.name.value;
     
-    if (!confirm(`Are you sure you want to delete ${beneficiary.controls.name.value}?`)) {
-      return;
-    }
-
-    this.customerService.deleteBeneficiary(beneficiaryId).subscribe({
-      next: () => {
-        this.loadCustomers();
-      },
-      error: (error) => {
-        console.error('Error deleting beneficiary:', error);
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete beneficiary ${beneficiaryName}?`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Yes, Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.customerService.deleteBeneficiary(beneficiaryId).subscribe({
+          next: () => {
+            this.loadCustomers();
+            this.notificationService.success('Beneficiary Deleted', `${beneficiaryName} has been deleted`);
+          },
+          error: (error) => {
+            this.errorHandler.logError(error, 'Delete Beneficiary');
+            this.notificationService.handleError(error, 'Failed to delete beneficiary');
+          }
+        });
       }
     });
   }

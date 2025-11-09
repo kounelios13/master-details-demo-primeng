@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { CustomerTableComponent } from './customer-table.component';
 import { Customer, Beneficiary } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
@@ -40,6 +41,8 @@ describe('CustomerTableComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        MessageService,
+        ConfirmationService,
         { provide: CustomerService, useValue: customerServiceSpy }
       ]
     }).compileComponents();

@@ -2,6 +2,8 @@
 
 Angular 19 + NestJS full-stack application demonstrating master-details pattern with reactive forms, REST API, and JWT authentication.
 
+**📚 [Best Practices Guide](BEST_PRACTICES.md)** - Learn about the industry-standard practices implemented in this project
+
 ## Architecture Overview
 
 This project is organized as an **Nx monorepo** with clear separation of concerns:
@@ -27,15 +29,22 @@ libs/
 - ✅ Change tracking and validation
 - ✅ Individual and bulk save operations
 - ✅ Reset functionality for unsaved changes
+- ✅ Toast notifications for user feedback
+- ✅ PrimeNG confirm dialogs for deletions
+- ✅ Advanced error handling with retry logic
 
 ### Backend (NestJS)
-- ✅ NestJS REST API
+- ✅ NestJS REST API with TypeScript
 - ✅ SQLite database with TypeORM
 - ✅ JWT authentication with Passport
 - ✅ Password hashing with bcrypt
 - ✅ Automatic database seeding
 - ✅ Protected API endpoints
 - ✅ CORS enabled
+- ✅ Input validation with class-validator
+- ✅ Swagger/OpenAPI documentation
+- ✅ Global exception handling
+- ✅ Request/response logging
 
 ### Shared
 - ✅ TypeScript models shared between frontend and backend
@@ -107,6 +116,18 @@ Navigate to `http://localhost:4200` and login with the credentials you configure
 - **Password:** demo123
 
 ## API Documentation
+
+### Interactive API Documentation (Swagger)
+
+Once the API is running, you can explore and test all endpoints using the interactive Swagger UI:
+
+**📖 Swagger UI:** `http://localhost:3000/api/docs`
+
+The Swagger documentation includes:
+- All available endpoints with request/response examples
+- Request body schemas with validation rules
+- Authentication requirements
+- Try-it-out functionality to test endpoints directly
 
 ### Authentication Endpoints
 
