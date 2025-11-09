@@ -4,7 +4,10 @@
       <h1>Master-Details Demo with PrimeNG</h1>
       <p class="subtitle">Angular 19 with Reactive Forms and PrimeNG Table Components</p>
     </div>
-    <button pButton type="button" label="Logout" icon="pi pi-sign-out" (click)="logout()" class="p-button-secondary"></button>
+    <div class="header-actions">
+      <button pButton type="button" label="Add Customer" icon="pi pi-plus" (click)="openNewCustomerDialog()" class="p-button-success"></button>
+      <button pButton type="button" label="Logout" icon="pi pi-sign-out" (click)="logout()" class="p-button-secondary"></button>
+    </div>
   </header>
 
 <div class="customer-table-container">
@@ -21,6 +24,7 @@
         <th>Company</th>
         <th>Beneficiaries</th>
         <th>Status</th>
+        <th style="width: 100px">Actions</th>
       </tr>
     </ng-template>
     
@@ -58,15 +62,33 @@
             </span>
           }
         </td>
+        <td>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger p-button-text"
+            (click)="deleteCustomer(index)"
+            pTooltip="Delete customer">
+          </button>
+        </td>
       </tr>
     </ng-template>
     
     <ng-template pTemplate="expandedrow" let-customer let-index="rowIndex">
       <tr>
-        <td colspan="6">
+        <td colspan="7">
           <div class="beneficiaries-container">
             <div class="beneficiaries-header">
               <h3>Beneficiaries</h3>
+              <button
+                pButton
+                type="button"
+                label="Add Beneficiary"
+                icon="pi pi-plus"
+                class="p-button-sm p-button-success"
+                (click)="openNewBeneficiaryDialog(index)">
+              </button>
             </div>
             
             <p-table
@@ -78,7 +100,7 @@
                   <th>Name</th>
                   <th>Question</th>
                   <th style="width: 200px">Answer</th>
-                  <th style="width: 100px">Actions</th>
+                  <th style="width: 150px">Actions</th>
                 </tr>
               </ng-template>
               
@@ -117,6 +139,14 @@
                         (click)="resetBeneficiary(index, beneficiaryIndex)"
                         pTooltip="Reset to original">
                       </button>
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        class="p-button-rounded p-button-danger p-button-text"
+                        (click)="deleteBeneficiary(index, beneficiaryIndex)"
+                        pTooltip="Delete beneficiary">
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -141,4 +171,114 @@
     </ng-template>
   </p-table>
 </div>
+
+<!-- Add Customer Dialog -->
+<p-dialog 
+  [(visible)]="showCustomerDialog" 
+  [header]="customerDialogTitle"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false">
+  <form [formGroup]="customerForm">
+    <div class="form-field">
+      <label for="name">Name *</label>
+      <input 
+        pInputText 
+        id="name" 
+        formControlName="name" 
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label for="email">Email *</label>
+      <input 
+        pInputText 
+        id="email" 
+        type="email"
+        formControlName="email" 
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label for="company">Company *</label>
+      <input 
+        pInputText 
+        id="company" 
+        formControlName="company" 
+        class="w-full" />
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      type="button" 
+      label="Cancel" 
+      class="p-button-secondary" 
+      (click)="closeCustomerDialog()">
+    </button>
+    <button 
+      pButton 
+      type="button" 
+      label="Save" 
+      class="p-button-success"
+      [disabled]="customerForm.invalid"
+      (click)="saveCustomer()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- Add Beneficiary Dialog -->
+<p-dialog 
+  [(visible)]="showBeneficiaryDialog" 
+  header="Add Beneficiary"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false">
+  <form [formGroup]="beneficiaryForm">
+    <div class="form-field">
+      <label for="beneficiary-name">Name *</label>
+      <input 
+        pInputText 
+        id="beneficiary-name" 
+        formControlName="name" 
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label for="beneficiary-question">Question *</label>
+      <input 
+        pInputText 
+        id="beneficiary-question" 
+        formControlName="question" 
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label for="beneficiary-answer">Answer *</label>
+      <p-select
+        id="beneficiary-answer"
+        formControlName="answer"
+        [options]="answerOptions"
+        optionLabel="label"
+        optionValue="value"
+        [style]="{ width: '100%' }">
+      </p-select>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      type="button" 
+      label="Cancel" 
+      class="p-button-secondary" 
+      (click)="closeBeneficiaryDialog()">
+    </button>
+    <button 
+      pButton 
+      type="button" 
+      label="Save" 
+      class="p-button-success"
+      [disabled]="beneficiaryForm.invalid"
+      (click)="saveBeneficiaryNew()">
+    </button>
+  </ng-template>
+</p-dialog>
 </div>

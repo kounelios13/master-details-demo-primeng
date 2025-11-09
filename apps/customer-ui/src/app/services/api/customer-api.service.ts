@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Customer } from '@master-details-demo-primeng/shared-models';
+import { Customer, Beneficiary } from '@master-details-demo-primeng/shared-models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -30,5 +30,17 @@ export class CustomerApiService {
 
   deleteCustomer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/customers/${id}`);
+  }
+
+  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id'>): Observable<Beneficiary> {
+    return this.http.post<Beneficiary>(`${this.apiUrl}/customers/${customerId}/beneficiaries`, beneficiary);
+  }
+
+  updateBeneficiary(beneficiaryId: number, beneficiary: Partial<Beneficiary>): Observable<Beneficiary> {
+    return this.http.put<Beneficiary>(`${this.apiUrl}/customers/beneficiaries/${beneficiaryId}`, beneficiary);
+  }
+
+  deleteBeneficiary(beneficiaryId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/customers/beneficiaries/${beneficiaryId}`);
   }
 }

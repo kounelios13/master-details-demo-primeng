@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomerEntity } from '../entities/customer.entity';
-import { Customer } from '@master-details-demo-primeng/shared-models';
+import { BeneficiaryEntity } from '../entities/beneficiary.entity';
+import { Customer, Beneficiary } from '@master-details-demo-primeng/shared-models';
 
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectRepository(CustomerEntity)
     private customerRepository: Repository<CustomerEntity>,
+    @InjectRepository(BeneficiaryEntity)
+    private beneficiaryRepository: Repository<BeneficiaryEntity>,
   ) {}
 
   async findAll(): Promise<Customer[]> {
@@ -34,5 +37,26 @@ export class CustomersService {
 
   async delete(id: number): Promise<void> {
     await this.customerRepository.delete(id);
+  }
+
+  async addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id'>): Promise<Beneficiary> {
+    const customer = await this.findOne(customerId);
+    if (!customer) {
+      throw new Error('Customer not found');
+    }
+    const newBeneficiary = this.beneficiaryRepository.create({
+      ...beneficiary,
+      customerId,
+    });
+    return this.beneficiaryRepository.save(newBeneficiary);
+  }
+
+  async updateBeneficiary(beneficiaryId: number, beneficiary: Partial<Beneficiary>): Promise<Beneficiary | null> {
+    await this.beneficiaryRepository.update(beneficiaryId, beneficiary as any);
+    return this.beneficiaryRepository.findOne({ where: { id: beneficiaryId } });
+  }
+
+  async deleteBeneficiary(beneficiaryId: number): Promise<void> {
+    await this.beneficiaryRepository.delete(beneficiaryId);
   }
 }
