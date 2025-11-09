@@ -1,12 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { RippleModule } from 'primeng/ripple';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { Customer, Beneficiary, ANSWER_OPTIONS, BeneficiaryForm, CustomerForm, CustomersFormGroup } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
 import { LoaderService } from '../../services/loader.service';
@@ -22,7 +24,9 @@ import { AuthService } from '../../services/api/auth.service';
     ButtonModule,
     SelectModule,
     TooltipModule,
-    RippleModule
+    RippleModule,
+    DialogModule,
+    InputTextModule
   ],
   templateUrl: './customer-table.component.html',
   styleUrl: './customer-table.component.css'
@@ -38,6 +42,26 @@ export class CustomerTableComponent implements OnInit {
   customers: Customer[] = [];
   answerOptions = ANSWER_OPTIONS;
   expandedRows: { [key: string]: boolean } = {};
+
+  // Dialog states
+  showCustomerDialog = false;
+  showBeneficiaryDialog = false;
+  customerDialogTitle = '';
+  currentCustomerIndex = -1;
+
+  // Customer form
+  customerForm = this.fb.group({
+    name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    company: ['', Validators.required]
+  });
+
+  // Beneficiary form
+  beneficiaryForm = this.fb.group({
+    name: ['', Validators.required],
+    question: ['', Validators.required],
+    answer: ['yes' as string, Validators.required]
+  });
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -129,9 +153,20 @@ export class CustomerTableComponent implements OnInit {
 
   saveBeneficiary(customerIndex: number, beneficiaryIndex: number): void {
     const beneficiary = this.getBeneficiaryFormGroup(customerIndex, beneficiaryIndex);
+    const beneficiaryId = beneficiary.controls.id.value;
     const answer = beneficiary.controls.answer.value;
-    beneficiary.patchValue({ originalAnswer: answer });
-    console.log('Saved beneficiary:', beneficiary.value);
+    
+    this.loaderService.show();
+    this.customerService.updateBeneficiary(beneficiaryId, { answer }).subscribe({
+      next: () => {
+        beneficiary.patchValue({ originalAnswer: answer });
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error saving beneficiary:', error);
+        this.loaderService.hide();
+      }
+    });
   }
 
   resetBeneficiary(customerIndex: number, beneficiaryIndex: number): void {
@@ -142,12 +177,40 @@ export class CustomerTableComponent implements OnInit {
 
   saveAllChanges(customerIndex: number): void {
     const beneficiaries = this.getBeneficiariesArray(customerIndex);
-    beneficiaries.controls.forEach(beneficiary => {
-      const answer = beneficiary.controls.answer.value;
-      beneficiary.patchValue({ originalAnswer: answer });
+    const updates = beneficiaries.controls
+      .filter(beneficiary => {
+        const answer = beneficiary.controls.answer.value;
+        const originalAnswer = beneficiary.controls.originalAnswer.value;
+        return answer !== originalAnswer;
+      })
+      .map(beneficiary => ({
+        id: beneficiary.controls.id.value,
+        answer: beneficiary.controls.answer.value
+      }));
+
+    if (updates.length === 0) return;
+
+    this.loaderService.show();
+    let completed = 0;
+    
+    updates.forEach(update => {
+      this.customerService.updateBeneficiary(update.id, { answer: update.answer }).subscribe({
+        next: () => {
+          completed++;
+          if (completed === updates.length) {
+            beneficiaries.controls.forEach(beneficiary => {
+              const answer = beneficiary.controls.answer.value;
+              beneficiary.patchValue({ originalAnswer: answer });
+            });
+            this.loaderService.hide();
+          }
+        },
+        error: (error) => {
+          console.error('Error saving beneficiary:', error);
+          this.loaderService.hide();
+        }
+      });
     });
-    const customer = this.getCustomerFormGroup(customerIndex);
-    console.log('Saved all changes for customer:', customer.value);
   }
 
   getBeneficiaryCount(customerIndex: number): number {
@@ -161,5 +224,123 @@ export class CustomerTableComponent implements OnInit {
       const originalAnswer = beneficiary.controls.originalAnswer.value;
       return answer !== originalAnswer;
     }).length;
+  }
+
+  // Customer CRUD operations
+  openNewCustomerDialog(): void {
+    this.customerDialogTitle = 'Add New Customer';
+    this.customerForm.reset({ name: '', email: '', company: '' });
+    this.showCustomerDialog = true;
+  }
+
+  closeCustomerDialog(): void {
+    this.showCustomerDialog = false;
+    this.customerForm.reset();
+  }
+
+  saveCustomer(): void {
+    if (this.customerForm.invalid) return;
+
+    const customerData = {
+      name: this.customerForm.value.name!,
+      email: this.customerForm.value.email!,
+      company: this.customerForm.value.company!,
+      beneficiaries: []
+    };
+
+    this.loaderService.show();
+    this.customerService.createCustomer(customerData).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.closeCustomerDialog();
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error creating customer:', error);
+        this.loaderService.hide();
+      }
+    });
+  }
+
+  deleteCustomer(customerIndex: number): void {
+    const customer = this.getCustomerFormGroup(customerIndex);
+    const customerId = customer.controls.id.value;
+    
+    if (!confirm(`Are you sure you want to delete ${customer.controls.name.value}?`)) {
+      return;
+    }
+
+    this.loaderService.show();
+    this.customerService.deleteCustomer(customerId).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error deleting customer:', error);
+        this.loaderService.hide();
+      }
+    });
+  }
+
+  // Beneficiary CRUD operations
+  openNewBeneficiaryDialog(customerIndex: number): void {
+    this.currentCustomerIndex = customerIndex;
+    this.beneficiaryForm.reset({ name: '', question: '', answer: 'yes' });
+    this.showBeneficiaryDialog = true;
+  }
+
+  closeBeneficiaryDialog(): void {
+    this.showBeneficiaryDialog = false;
+    this.beneficiaryForm.reset();
+    this.currentCustomerIndex = -1;
+  }
+
+  saveBeneficiaryNew(): void {
+    if (this.beneficiaryForm.invalid || this.currentCustomerIndex === -1) return;
+
+    const customer = this.getCustomerFormGroup(this.currentCustomerIndex);
+    const customerId = customer.controls.id.value;
+
+    const beneficiaryData = {
+      name: this.beneficiaryForm.value.name!,
+      question: this.beneficiaryForm.value.question!,
+      answer: this.beneficiaryForm.value.answer!,
+      originalAnswer: this.beneficiaryForm.value.answer!
+    };
+
+    this.loaderService.show();
+    this.customerService.addBeneficiary(customerId, beneficiaryData).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.closeBeneficiaryDialog();
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error adding beneficiary:', error);
+        this.loaderService.hide();
+      }
+    });
+  }
+
+  deleteBeneficiary(customerIndex: number, beneficiaryIndex: number): void {
+    const beneficiary = this.getBeneficiaryFormGroup(customerIndex, beneficiaryIndex);
+    const beneficiaryId = beneficiary.controls.id.value;
+    
+    if (!confirm(`Are you sure you want to delete ${beneficiary.controls.name.value}?`)) {
+      return;
+    }
+
+    this.loaderService.show();
+    this.customerService.deleteBeneficiary(beneficiaryId).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.loaderService.hide();
+      },
+      error: (error) => {
+        console.error('Error deleting beneficiary:', error);
+        this.loaderService.hide();
+      }
+    });
   }
 }

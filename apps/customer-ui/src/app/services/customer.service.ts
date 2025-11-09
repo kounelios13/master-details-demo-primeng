@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Customer } from '@master-details-demo-primeng/shared-models';
+import { Customer, Beneficiary } from '@master-details-demo-primeng/shared-models';
 import { CustomerApiService } from './api/customer-api.service';
 
 @Injectable({
@@ -27,5 +27,17 @@ export class CustomerService {
 
   deleteCustomer(id: number): Observable<void> {
     return this.customerApi.deleteCustomer(id);
+  }
+
+  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id'>): Observable<Beneficiary> {
+    return this.customerApi.addBeneficiary(customerId, beneficiary);
+  }
+
+  updateBeneficiary(beneficiaryId: number, beneficiary: Partial<Beneficiary>): Observable<Beneficiary> {
+    return this.customerApi.updateBeneficiary(beneficiaryId, beneficiary);
+  }
+
+  deleteBeneficiary(beneficiaryId: number): Observable<void> {
+    return this.customerApi.deleteBeneficiary(beneficiaryId);
   }
 }

@@ -3,10 +3,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomersService } from './customers.service';
 import { CustomerEntity } from '../entities/customer.entity';
+import { BeneficiaryEntity } from '../entities/beneficiary.entity';
 
 describe('CustomersService', () => {
   let service: CustomersService;
   let repository: Repository<CustomerEntity>;
+  let beneficiaryRepository: Repository<BeneficiaryEntity>;
 
   const mockCustomer = {
     id: 1,
@@ -16,8 +18,25 @@ describe('CustomersService', () => {
     beneficiaries: [],
   };
 
+  const mockBeneficiary = {
+    id: 1,
+    name: 'Test Beneficiary',
+    question: 'Test Question',
+    answer: 'yes',
+    originalAnswer: 'yes',
+    customerId: 1,
+  };
+
   const mockRepository = {
     find: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const mockBeneficiaryRepository = {
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
@@ -33,12 +52,19 @@ describe('CustomersService', () => {
           provide: getRepositoryToken(CustomerEntity),
           useValue: mockRepository,
         },
+        {
+          provide: getRepositoryToken(BeneficiaryEntity),
+          useValue: mockBeneficiaryRepository,
+        },
       ],
     }).compile();
 
     service = module.get<CustomersService>(CustomersService);
     repository = module.get<Repository<CustomerEntity>>(
       getRepositoryToken(CustomerEntity)
+    );
+    beneficiaryRepository = module.get<Repository<BeneficiaryEntity>>(
+      getRepositoryToken(BeneficiaryEntity)
     );
   });
 
@@ -104,6 +130,53 @@ describe('CustomersService', () => {
       mockRepository.delete.mockResolvedValue({ affected: 1 });
       await service.delete(1);
       expect(repository.delete).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('addBeneficiary', () => {
+    it('should add a beneficiary to a customer', async () => {
+      mockRepository.findOne.mockResolvedValue(mockCustomer);
+      const newBeneficiary = { ...mockBeneficiary };
+      delete (newBeneficiary as any).id;
+      
+      mockBeneficiaryRepository.create.mockReturnValue(mockBeneficiary);
+      mockBeneficiaryRepository.save.mockResolvedValue(mockBeneficiary);
+
+      const result = await service.addBeneficiary(1, newBeneficiary);
+      expect(result).toEqual(mockBeneficiary);
+      expect(beneficiaryRepository.create).toHaveBeenCalledWith({
+        ...newBeneficiary,
+        customerId: 1,
+      });
+      expect(beneficiaryRepository.save).toHaveBeenCalledWith(mockBeneficiary);
+    });
+
+    it('should throw error if customer not found', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.addBeneficiary(999, mockBeneficiary)).rejects.toThrow('Customer not found');
+    });
+  });
+
+  describe('updateBeneficiary', () => {
+    it('should update and return a beneficiary', async () => {
+      const updateData = { answer: 'no' };
+      mockBeneficiaryRepository.update.mockResolvedValue({ affected: 1 });
+      mockBeneficiaryRepository.findOne.mockResolvedValue({
+        ...mockBeneficiary,
+        ...updateData,
+      });
+
+      const result = await service.updateBeneficiary(1, updateData);
+      expect(result).toEqual({ ...mockBeneficiary, ...updateData });
+      expect(beneficiaryRepository.update).toHaveBeenCalledWith(1, updateData);
+    });
+  });
+
+  describe('deleteBeneficiary', () => {
+    it('should delete a beneficiary', async () => {
+      mockBeneficiaryRepository.delete.mockResolvedValue({ affected: 1 });
+      await service.deleteBeneficiary(1);
+      expect(beneficiaryRepository.delete).toHaveBeenCalledWith(1);
     });
   });
 });

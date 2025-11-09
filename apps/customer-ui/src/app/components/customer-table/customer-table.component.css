@@ -23,6 +23,11 @@
   font-size: 1rem;
 }
 
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
 .customer-table-container {
   background: white;
   border-radius: 8px;
@@ -98,6 +103,21 @@
   display: flex;
   gap: 0.5rem;
   justify-content: center;
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.w-full {
+  width: 100%;
 }
 
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {

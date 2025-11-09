@@ -18,10 +18,23 @@ describe('CustomerTableComponent', () => {
   let loaderService: jasmine.SpyObj<LoaderService>;
 
   beforeEach(async () => {
-    const customerServiceSpy = jasmine.createSpyObj('CustomerService', ['getCustomers']);
+    const customerServiceSpy = jasmine.createSpyObj('CustomerService', [
+      'getCustomers',
+      'createCustomer',
+      'updateCustomer',
+      'deleteCustomer',
+      'addBeneficiary',
+      'updateBeneficiary',
+      'deleteBeneficiary'
+    ]);
     const loaderServiceSpy = jasmine.createSpyObj('LoaderService', ['show', 'hide']);
     
     customerServiceSpy.getCustomers.and.returnValue(of(MOCK_CUSTOMERS));
+    customerServiceSpy.updateBeneficiary.and.returnValue(of({} as Beneficiary));
+    customerServiceSpy.createCustomer.and.returnValue(of({} as Customer));
+    customerServiceSpy.deleteCustomer.and.returnValue(of(undefined));
+    customerServiceSpy.addBeneficiary.and.returnValue(of({} as Beneficiary));
+    customerServiceSpy.deleteBeneficiary.and.returnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [CustomerTableComponent, ReactiveFormsModule],
@@ -206,11 +219,15 @@ describe('CustomerTableComponent', () => {
       expect(component.isBeneficiaryChanged(0, 0)).toBe(false);
     });
 
-    it('should console log saved beneficiary data', () => {
-      spyOn(console, 'log');
+    it('should call updateBeneficiary API when saving', fakeAsync(() => {
+      const beneficiary = component.getBeneficiaryFormGroup(0, 0);
+      beneficiary.patchValue({ answer: 'no' });
+      
       component.saveBeneficiary(0, 0);
-      expect(console.log).toHaveBeenCalled();
-    });
+      tick();
+      
+      expect(customerService.updateBeneficiary).toHaveBeenCalled();
+    }));
 
     it('should save all changes for a customer', () => {
       const beneficiary1 = component.getBeneficiaryFormGroup(0, 0);
@@ -228,11 +245,18 @@ describe('CustomerTableComponent', () => {
       expect(component.hasChanges(0)).toBe(false);
     });
 
-    it('should console log customer data when saving all changes', () => {
-      spyOn(console, 'log');
+    it('should call updateBeneficiary API for each changed beneficiary when saving all', fakeAsync(() => {
+      const beneficiary1 = component.getBeneficiaryFormGroup(0, 0);
+      const beneficiary2 = component.getBeneficiaryFormGroup(0, 1);
+      
+      beneficiary1.patchValue({ answer: 'no' });
+      beneficiary2.patchValue({ answer: 'yes' });
+      
       component.saveAllChanges(0);
-      expect(console.log).toHaveBeenCalled();
-    });
+      tick();
+      
+      expect(customerService.updateBeneficiary).toHaveBeenCalled();
+    }));
 
     it('should save all beneficiaries even if some are unchanged', () => {
       const beneficiary1 = component.getBeneficiaryFormGroup(0, 0);
