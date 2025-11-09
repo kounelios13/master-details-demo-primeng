@@ -269,3 +269,8 @@ If tasked with creating a new API in this workspace:
 - [PrimeNG Documentation](https://primeng.org)
 - [Nx Documentation](https://nx.dev)
 - [RxJS Documentation](https://rxjs.dev)
+
+
+# Testing bugs related to UI/API 
+- Frst start the API project
+- Then the customer-ui project
