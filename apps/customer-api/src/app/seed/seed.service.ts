@@ -29,9 +29,16 @@ export class SeedService {
 
     this.logger.log('Seeding database...');
 
-    // Get credentials from environment variables or use defaults (for development only)
-    const defaultUsername = process.env['SEED_USERNAME'] || 'demo';
-    const defaultPassword = process.env['SEED_PASSWORD'] || 'demo123';
+    // Get credentials from environment variables - fail if not provided
+    const defaultUsername = process.env['SEED_USERNAME'];
+    const defaultPassword = process.env['SEED_PASSWORD'];
+
+    if (!defaultUsername || !defaultPassword) {
+      throw new Error(
+        'SEED_USERNAME and SEED_PASSWORD environment variables must be set for database seeding. ' +
+        'Please set these variables before running the seed command.'
+      );
+    }
 
     // Create default user
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
