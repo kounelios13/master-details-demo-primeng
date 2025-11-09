@@ -113,8 +113,9 @@ describe('CustomersService', () => {
   describe('update', () => {
     it('should update and return a customer', async () => {
       const updateData = { name: 'Updated Name' };
+      mockRepository.findOne.mockResolvedValueOnce(mockCustomer);
       mockRepository.update.mockResolvedValue({ affected: 1 });
-      mockRepository.findOne.mockResolvedValue({
+      mockRepository.findOne.mockResolvedValueOnce({
         ...mockCustomer,
         ...updateData,
       });
@@ -123,13 +124,24 @@ describe('CustomersService', () => {
       expect(result).toEqual({ ...mockCustomer, ...updateData });
       expect(repository.update).toHaveBeenCalledWith(1, updateData);
     });
+
+    it('should throw error if customer not found', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.update(999, { name: 'Test' })).rejects.toThrow('Customer with ID 999 not found');
+    });
   });
 
   describe('delete', () => {
     it('should delete a customer', async () => {
+      mockRepository.findOne.mockResolvedValue(mockCustomer);
       mockRepository.delete.mockResolvedValue({ affected: 1 });
       await service.delete(1);
       expect(repository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw error if customer not found', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await expect(service.delete(999)).rejects.toThrow('Customer with ID 999 not found');
     });
   });
 
@@ -153,15 +165,16 @@ describe('CustomersService', () => {
 
     it('should throw error if customer not found', async () => {
       mockRepository.findOne.mockResolvedValue(null);
-      await expect(service.addBeneficiary(999, mockBeneficiary)).rejects.toThrow('Customer not found');
+      await expect(service.addBeneficiary(999, mockBeneficiary)).rejects.toThrow('Customer with ID 999 not found');
     });
   });
 
   describe('updateBeneficiary', () => {
     it('should update and return a beneficiary', async () => {
       const updateData = { answer: 'no' };
+      mockBeneficiaryRepository.findOne.mockResolvedValueOnce(mockBeneficiary);
       mockBeneficiaryRepository.update.mockResolvedValue({ affected: 1 });
-      mockBeneficiaryRepository.findOne.mockResolvedValue({
+      mockBeneficiaryRepository.findOne.mockResolvedValueOnce({
         ...mockBeneficiary,
         ...updateData,
       });
@@ -170,13 +183,24 @@ describe('CustomersService', () => {
       expect(result).toEqual({ ...mockBeneficiary, ...updateData });
       expect(beneficiaryRepository.update).toHaveBeenCalledWith(1, updateData);
     });
+
+    it('should throw error if beneficiary not found', async () => {
+      mockBeneficiaryRepository.findOne.mockResolvedValue(null);
+      await expect(service.updateBeneficiary(999, { answer: 'no' })).rejects.toThrow('Beneficiary with ID 999 not found');
+    });
   });
 
   describe('deleteBeneficiary', () => {
     it('should delete a beneficiary', async () => {
+      mockBeneficiaryRepository.findOne.mockResolvedValue(mockBeneficiary);
       mockBeneficiaryRepository.delete.mockResolvedValue({ affected: 1 });
       await service.deleteBeneficiary(1);
       expect(beneficiaryRepository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw error if beneficiary not found', async () => {
+      mockBeneficiaryRepository.findOne.mockResolvedValue(null);
+      await expect(service.deleteBeneficiary(999)).rejects.toThrow('Beneficiary with ID 999 not found');
     });
   });
 });
