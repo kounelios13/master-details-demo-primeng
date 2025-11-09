@@ -126,8 +126,8 @@ myForm = this.fb.group<MyDataForm>({
 - Use PrimeNG's reactive form integration with `formControlName`
 - Leverage PrimeNG directives like `pRipple`, `pTooltip`
 - When using a `p-select` make sure to include `appendTo='body'` like this:
-  ```
- <p-select ... apendTo="body"/>
+  ```html
+     <p-select ... apendTo="body"/>
   ```
 
 ### Services
