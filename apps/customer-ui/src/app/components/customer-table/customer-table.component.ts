@@ -105,12 +105,15 @@ export class CustomerTableComponent implements OnInit {
   }
 
   private createBeneficiaryFormGroup(beneficiary: Beneficiary): FormGroup<BeneficiaryForm> {
+    // Ensure originalAnswer is set, defaulting to answer if missing
+    const originalAnswer = beneficiary.originalAnswer || beneficiary.answer;
+    
     return this.fb.group<BeneficiaryForm>({
       id: this.fb.control<number>(beneficiary.id, { nonNullable: true }),
       name: this.fb.control<string>(beneficiary.name, { nonNullable: true }),
       question: this.fb.control<string>(beneficiary.question, { nonNullable: true }),
       answer: this.fb.control<string>(beneficiary.answer, { nonNullable: true }),
-      originalAnswer: this.fb.control<string>(beneficiary.originalAnswer, { nonNullable: true })
+      originalAnswer: this.fb.control<string>(originalAnswer, { nonNullable: true })
     });
   }
 
