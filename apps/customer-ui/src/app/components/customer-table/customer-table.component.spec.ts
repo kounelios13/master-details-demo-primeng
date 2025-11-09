@@ -405,6 +405,23 @@ describe('CustomerTableComponent', () => {
       component.resetBeneficiary(0, 0);
       expect(beneficiary.get('answer')?.value).toBe('no');
     });
+
+    it('should default originalAnswer to answer if missing', () => {
+      // Create a beneficiary without originalAnswer
+      const beneficiaryWithoutOriginal: any = {
+        id: 999,
+        name: 'Test Beneficiary',
+        question: 'Test question?',
+        answer: 'yes',
+        originalAnswer: '' // Empty string to simulate missing value
+      };
+
+      // The private method will handle this correctly
+      const formGroup = (component as any).createBeneficiaryFormGroup(beneficiaryWithoutOriginal);
+      
+      expect(formGroup.get('answer')?.value).toBe('yes');
+      expect(formGroup.get('originalAnswer')?.value).toBe('yes');
+    });
   });
 
   describe('Integration Tests', () => {
