@@ -13,7 +13,7 @@ export class CreateCustomerDto {
   })
   @IsNotEmpty({ message: 'Name is required' })
   @IsString({ message: 'Name must be a string' })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'Customer email address',
@@ -21,7 +21,7 @@ export class CreateCustomerDto {
   })
   @IsNotEmpty({ message: 'Email is required' })
   @IsEmail({}, { message: 'Invalid email format' })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'Customer company name',
@@ -29,7 +29,7 @@ export class CreateCustomerDto {
   })
   @IsNotEmpty({ message: 'Company is required' })
   @IsString({ message: 'Company must be a string' })
-  company: string;
+  company!: string;
 
   @ApiPropertyOptional({
     description: 'List of beneficiaries for the customer',
