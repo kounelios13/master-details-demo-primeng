@@ -84,6 +84,7 @@ export class CustomersService {
     const newBeneficiary = this.beneficiaryRepository.create({
       ...createBeneficiaryDto,
       customerId,
+      originalAnswer: createBeneficiaryDto.answer, // Set originalAnswer to match answer on creation
     });
     return this.beneficiaryRepository.save(newBeneficiary);
   }

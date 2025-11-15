@@ -32,7 +32,7 @@ export class CustomerApiService {
     return this.http.delete<void>(`${this.apiUrl}/customers/${id}`);
   }
 
-  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id'>): Observable<Beneficiary> {
+  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id' | 'originalAnswer'>): Observable<Beneficiary> {
     return this.http.post<Beneficiary>(`${this.apiUrl}/customers/${customerId}/beneficiaries`, beneficiary);
   }
 
