@@ -146,19 +146,25 @@ describe('CustomersService', () => {
   });
 
   describe('addBeneficiary', () => {
-    it('should add a beneficiary to a customer', async () => {
+    it('should add a beneficiary to a customer with originalAnswer set automatically', async () => {
       mockRepository.findOne.mockResolvedValue(mockCustomer);
-      const newBeneficiary = { ...mockBeneficiary };
-      delete (newBeneficiary as any).id;
+      // Create DTO without originalAnswer (as per CreateBeneficiaryDto)
+      const createBeneficiaryDto = {
+        name: 'Test Beneficiary',
+        question: 'Test Question',
+        answer: 'yes',
+      };
       
       mockBeneficiaryRepository.create.mockReturnValue(mockBeneficiary);
       mockBeneficiaryRepository.save.mockResolvedValue(mockBeneficiary);
 
-      const result = await service.addBeneficiary(1, newBeneficiary);
+      const result = await service.addBeneficiary(1, createBeneficiaryDto);
       expect(result).toEqual(mockBeneficiary);
+      // Verify originalAnswer is set automatically to match answer
       expect(beneficiaryRepository.create).toHaveBeenCalledWith({
-        ...newBeneficiary,
+        ...createBeneficiaryDto,
         customerId: 1,
+        originalAnswer: 'yes',
       });
       expect(beneficiaryRepository.save).toHaveBeenCalledWith(mockBeneficiary);
     });
