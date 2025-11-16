@@ -38,19 +38,19 @@ jobs:
       run: npx nx build shared-models
 
     - name: Test shared library
-      run: npx nx test shared-models
+      run: npx nx test shared-models --coverage
 
     - name: Build API
       run: npx nx build customer-api
 
     - name: Test API
-      run: npx nx test customer-api
+      run: npx nx test customer-api --coverage
 
     - name: Build UI
       run: npx nx build customer-ui
 
     - name: Test UI
-      run: npx nx test customer-ui --watch=false --browsers=ChromeHeadless
+      run: npx nx test customer-ui --watch=false --browsers=ChromeHeadless --code-coverage
 
     - name: Archive test results
       if: always()
