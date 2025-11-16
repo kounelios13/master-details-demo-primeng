@@ -346,8 +346,7 @@ export class CustomerTableComponent implements OnInit {
     const beneficiaryData = {
       name: this.beneficiaryForm.value.name ?? '',
       question: this.beneficiaryForm.value.question ?? '',
-      answer: this.beneficiaryForm.value.answer ?? 'yes',
-      originalAnswer: this.beneficiaryForm.value.answer ?? 'yes'
+      answer: this.beneficiaryForm.value.answer ?? 'yes'
     };
 
     this.customerService.addBeneficiary(customerId, beneficiaryData).subscribe({

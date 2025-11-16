@@ -29,7 +29,7 @@ export class CustomerService {
     return this.customerApi.deleteCustomer(id);
   }
 
-  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id'>): Observable<Beneficiary> {
+  addBeneficiary(customerId: number, beneficiary: Omit<Beneficiary, 'id' | 'originalAnswer'>): Observable<Beneficiary> {
     return this.customerApi.addBeneficiary(customerId, beneficiary);
   }
 
