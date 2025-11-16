@@ -231,6 +231,7 @@ describe('MyComponent', () => {
 - Prefer `const` over `let`, avoid `var`
 - Use arrow functions for callbacks
 - Use optional chaining (`?.`) and nullish coalescing (`??`)
+- **Prefer fewer branches whenever possible to reduce nesting** - use early returns, guard clauses, and flat control flow
 
 ### Naming Conventions
 - **Components**: PascalCase with descriptive names (`CustomerTableComponent`)
@@ -259,7 +260,7 @@ describe('MyComponent', () => {
 
 - Write a clear JSDoc comment explaining the purpose, parameters, return values, and any exceptions.
 - Include input validation where appropriate
-- Use early returns for error conditions to reduce nesting where appropriate.
+- **Prefer fewer branches to reduce nesting** - use early returns for error conditions, guard clauses, and avoid deeply nested if/else statements.
 - Follow the project's naming conventions and coding style.
 - Include type annotations for all parameters and return values.
 - Write unit tests to cover the new function or method, ensuring it behaves as expected.
