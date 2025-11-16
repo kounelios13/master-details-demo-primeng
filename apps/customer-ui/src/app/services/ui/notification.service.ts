@@ -86,41 +86,85 @@ export class NotificationService {
   handleError(error: unknown, customMessage?: string): void {
     console.error('Error occurred:', error);
     
-    let errorMessage = customMessage || 'An error occurred';
-    let errorDetail = '';
+    const errorInfo = this.extractErrorInfo(error, customMessage);
+    this.error(errorInfo.message, errorInfo.detail);
+  }
 
-    if (error && typeof error === 'object') {
-      const err = error as { status?: number; error?: { message?: string | string[] }; message?: string };
-      
-      // Handle different error formats
-      if (err.error?.message) {
-        if (Array.isArray(err.error.message)) {
-          errorDetail = err.error.message.join(', ');
-        } else {
-          errorDetail = err.error.message;
-        }
-      } else if (err.message) {
-        errorDetail = err.message;
-      }
-
-      // Customize message based on status code
-      if (err.status === 401) {
-        errorMessage = 'Authentication Failed';
-        errorDetail = errorDetail || 'Please check your credentials and try again';
-      } else if (err.status === 403) {
-        errorMessage = 'Access Denied';
-        errorDetail = errorDetail || 'You do not have permission to perform this action';
-      } else if (err.status === 404) {
-        errorMessage = 'Not Found';
-        errorDetail = errorDetail || 'The requested resource was not found';
-      } else if (err.status === 400) {
-        errorMessage = 'Invalid Input';
-      } else if (err.status && err.status >= 500) {
-        errorMessage = 'Server Error';
-        errorDetail = errorDetail || 'An unexpected error occurred. Please try again later';
-      }
+  /**
+   * Extract error information from error object
+   * Separated for better testability and reduced complexity
+   * @param error - Error object
+   * @param customMessage - Optional custom message
+   * @returns Object with message and detail
+   */
+  private extractErrorInfo(error: unknown, customMessage?: string): { message: string; detail: string } {
+    const defaultMessage = customMessage || 'An error occurred';
+    
+    if (!error || typeof error !== 'object') {
+      return { message: defaultMessage, detail: '' };
     }
 
-    this.error(errorMessage, errorDetail);
+    const err = error as { status?: number; error?: { message?: string | string[] }; message?: string };
+    const detail = this.extractErrorDetail(err);
+    const message = this.getStatusBasedMessage(err.status, defaultMessage);
+    
+    return { message, detail: this.enhanceDetailForStatus(err.status, detail) };
+  }
+
+  /**
+   * Extract error detail from error object
+   * @param err - Error object with potential message properties
+   * @returns Error detail string
+   */
+  private extractErrorDetail(err: { error?: { message?: string | string[] }; message?: string }): string {
+    if (err.error?.message) {
+      return Array.isArray(err.error.message) 
+        ? err.error.message.join(', ') 
+        : err.error.message;
+    }
+    return err.message || '';
+  }
+
+  /**
+   * Get user-friendly message based on HTTP status code
+   * @param status - HTTP status code
+   * @param defaultMessage - Default message to use
+   * @returns User-friendly message
+   */
+  private getStatusBasedMessage(status: number | undefined, defaultMessage: string): string {
+    if (!status) return defaultMessage;
+
+    const statusMessages: Record<number, string> = {
+      400: 'Invalid Input',
+      401: 'Authentication Failed',
+      403: 'Access Denied',
+      404: 'Not Found'
+    };
+
+    if (status >= 500) return 'Server Error';
+    return statusMessages[status] || defaultMessage;
+  }
+
+  /**
+   * Enhance error detail with default message for specific status codes
+   * @param status - HTTP status code
+   * @param detail - Current detail message
+   * @returns Enhanced detail message
+   */
+  private enhanceDetailForStatus(status: number | undefined, detail: string): string {
+    if (detail) return detail;
+    if (!status) return '';
+
+    const defaultDetails: Record<number, string> = {
+      401: 'Please check your credentials and try again',
+      403: 'You do not have permission to perform this action',
+      404: 'The requested resource was not found'
+    };
+
+    if (status >= 500) {
+      return 'An unexpected error occurred. Please try again later';
+    }
+
+    return defaultDetails[status] || '';
   }
 }
