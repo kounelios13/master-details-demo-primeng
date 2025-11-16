@@ -4,7 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { CustomerService } from './customer.service';
 import { CustomerApiService } from './api/customer-api.service';
 import { AuthService } from './api/auth.service';
-import { Customer } from '@master-details-demo-primeng/shared-models';
+import { Customer, Beneficiary } from '@master-details-demo-primeng/shared-models';
 
 describe('CustomerService', () => {
   let service: CustomerService;
@@ -151,6 +151,142 @@ describe('CustomerService', () => {
 
       const req = httpMock.expectOne('http://localhost:3000/api/customers');
       req.flush(mockCustomers);
+    });
+  });
+
+  describe('getCustomer', () => {
+    it('should return a single customer from API', (done) => {
+      const mockCustomer: Customer = {
+        id: 1,
+        name: 'Test Customer',
+        email: 'test@example.com',
+        company: 'Test Corp',
+        beneficiaries: []
+      };
+
+      service.getCustomer(1).subscribe((customer) => {
+        expect(customer).toEqual(mockCustomer);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/1');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockCustomer);
+    });
+  });
+
+  describe('createCustomer', () => {
+    it('should create a new customer', (done) => {
+      const newCustomer: Omit<Customer, 'id'> = {
+        name: 'New Customer',
+        email: 'new@example.com',
+        company: 'New Corp',
+        beneficiaries: []
+      };
+      const mockResponse: Customer = { id: 1, ...newCustomer };
+
+      service.createCustomer(newCustomer).subscribe((customer) => {
+        expect(customer).toEqual(mockResponse);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers');
+      expect(req.request.method).toBe('POST');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('updateCustomer', () => {
+    it('should update a customer', (done) => {
+      const updates: Partial<Customer> = { name: 'Updated Name' };
+      const mockResponse: Customer = {
+        id: 1,
+        name: 'Updated Name',
+        email: 'test@example.com',
+        company: 'Test Corp',
+        beneficiaries: []
+      };
+
+      service.updateCustomer(1, updates).subscribe((customer) => {
+        expect(customer).toEqual(mockResponse);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/1');
+      expect(req.request.method).toBe('PUT');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('deleteCustomer', () => {
+    it('should delete a customer', (done) => {
+      service.deleteCustomer(1).subscribe(() => {
+        expect(true).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/1');
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
+
+  describe('addBeneficiary', () => {
+    it('should add a beneficiary to a customer', (done) => {
+      const newBeneficiary: Omit<Beneficiary, 'id' | 'originalAnswer'> = {
+        name: 'New Beneficiary',
+        question: 'Test question?',
+        answer: 'yes'
+      };
+      const mockResponse: Beneficiary = {
+        id: 101,
+        originalAnswer: 'yes',
+        ...newBeneficiary
+      };
+
+      service.addBeneficiary(1, newBeneficiary).subscribe((beneficiary) => {
+        expect(beneficiary).toEqual(mockResponse);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/1/beneficiaries');
+      expect(req.request.method).toBe('POST');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('updateBeneficiary', () => {
+    it('should update a beneficiary', (done) => {
+      const updates: Partial<Beneficiary> = { answer: 'no' };
+      const mockResponse: Beneficiary = {
+        id: 101,
+        name: 'Beneficiary',
+        question: 'Test?',
+        answer: 'no',
+        originalAnswer: 'yes'
+      };
+
+      service.updateBeneficiary(101, updates).subscribe((beneficiary) => {
+        expect(beneficiary).toEqual(mockResponse);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/beneficiaries/101');
+      expect(req.request.method).toBe('PUT');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('deleteBeneficiary', () => {
+    it('should delete a beneficiary', (done) => {
+      service.deleteBeneficiary(101).subscribe(() => {
+        expect(true).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/customers/beneficiaries/101');
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
     });
   });
 });
