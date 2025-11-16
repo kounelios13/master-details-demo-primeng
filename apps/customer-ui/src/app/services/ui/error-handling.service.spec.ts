@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { ErrorHandlingService } from './error-handling.service';
 
 describe('ErrorHandlingService', () => {
@@ -98,6 +99,120 @@ describe('ErrorHandlingService', () => {
         jasmine.stringContaining('Error:'),
         error
       );
+    });
+
+    it('should log error without context', () => {
+      spyOn(console, 'error');
+      const error = new Error('Test error');
+      service.logError(error);
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getErrorMessage - additional branches', () => {
+    it('should return message for 400 status', () => {
+      const error = new HttpErrorResponse({ status: 400 });
+      expect(service.getErrorMessage(error)).toContain('Invalid request');
+    });
+
+    it('should return message for 403 status', () => {
+      const error = new HttpErrorResponse({ status: 403 });
+      expect(service.getErrorMessage(error)).toContain('not have permission');
+    });
+
+    it('should return message for 409 status', () => {
+      const error = new HttpErrorResponse({ status: 409 });
+      expect(service.getErrorMessage(error)).toContain('conflict occurred');
+    });
+
+    it('should return message for 422 status', () => {
+      const error = new HttpErrorResponse({ status: 422 });
+      expect(service.getErrorMessage(error)).toContain('invalid or incomplete');
+    });
+
+    it('should return message for 429 status', () => {
+      const error = new HttpErrorResponse({ status: 429 });
+      expect(service.getErrorMessage(error)).toContain('Too many requests');
+    });
+
+    it('should return message for 502 status', () => {
+      const error = new HttpErrorResponse({ status: 502 });
+      expect(service.getErrorMessage(error)).toContain('temporarily unavailable');
+    });
+
+    it('should return message for 503 status', () => {
+      const error = new HttpErrorResponse({ status: 503 });
+      expect(service.getErrorMessage(error)).toContain('temporarily unavailable');
+    });
+
+    it('should return message for 504 status', () => {
+      const error = new HttpErrorResponse({ status: 504 });
+      expect(service.getErrorMessage(error)).toContain('temporarily unavailable');
+    });
+
+    it('should return default message for unknown status', () => {
+      const error = new HttpErrorResponse({ status: 418, statusText: 'I am a teapot' });
+      const message = service.getErrorMessage(error);
+      expect(message).toContain('failure');
+    });
+
+    it('should return message for non-Error objects', () => {
+      const result = service.getErrorMessage({ some: 'object' });
+      expect(result).toBe('An unexpected error occurred.');
+    });
+  });
+
+  describe('createRetryStrategy', () => {
+    it('should create retry strategy with default config', (done) => {
+      const strategy = service.createRetryStrategy();
+      expect(strategy).toBeDefined();
+      done();
+    });
+
+    it('should create retry strategy with custom config', (done) => {
+      const strategy = service.createRetryStrategy({ maxRetries: 5, retryDelay: 500 });
+      expect(strategy).toBeDefined();
+      done();
+    });
+  });
+
+  describe('withRetry', () => {
+    it('should apply retry logic to observable', (done) => {
+      const mockObservable = new Observable((subscriber) => {
+        subscriber.next('success');
+        subscriber.complete();
+      });
+
+      service.withRetry(mockObservable).subscribe({
+        next: (value) => {
+          expect(value).toBe('success');
+        },
+        complete: () => {
+          // finalize runs asynchronously
+          setTimeout(() => {
+            done();
+          }, 10);
+        }
+      });
+    });
+
+    it('should apply retry logic with custom config', (done) => {
+      const mockObservable = new Observable((subscriber) => {
+        subscriber.next('success');
+        subscriber.complete();
+      });
+
+      service.withRetry(mockObservable, { maxRetries: 2, retryDelay: 100 }).subscribe({
+        next: (value) => {
+          expect(value).toBe('success');
+        },
+        complete: () => {
+          // finalize runs asynchronously
+          setTimeout(() => {
+            done();
+          }, 10);
+        }
+      });
     });
   });
 });

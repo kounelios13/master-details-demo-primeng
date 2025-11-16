@@ -118,4 +118,78 @@ describe('NotificationService', () => {
       })
     );
   });
+
+  it('should handle null error', () => {
+    spyOn(messageService, 'add');
+    service.handleError(null);
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'An error occurred',
+        detail: ''
+      })
+    );
+  });
+
+  it('should handle undefined error', () => {
+    spyOn(messageService, 'add');
+    service.handleError(undefined);
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'An error occurred',
+        detail: ''
+      })
+    );
+  });
+
+  it('should handle non-object error', () => {
+    spyOn(messageService, 'add');
+    service.handleError('string error');
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'An error occurred',
+        detail: ''
+      })
+    );
+  });
+
+  it('should handle error without status code', () => {
+    spyOn(messageService, 'add');
+    const error = { error: { message: 'Some error' } };
+    service.handleError(error);
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'An error occurred',
+        detail: 'Some error'
+      })
+    );
+  });
+
+  it('should use custom message when provided', () => {
+    spyOn(messageService, 'add');
+    const error = { status: 500 };
+    service.handleError(error, 'Custom Error Message');
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'Server Error'
+      })
+    );
+  });
+
+  it('should handle error with status but no detail', () => {
+    spyOn(messageService, 'add');
+    const error = { status: 401 };
+    service.handleError(error);
+    expect(messageService.add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        severity: 'error',
+        summary: 'Authentication Failed',
+        detail: 'Please check your credentials and try again'
+      })
+    );
+  });
 });
