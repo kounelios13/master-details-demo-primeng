@@ -2,16 +2,32 @@
 
 ## Project Overview
 
-This is an **Angular 19** application demonstrating a master-details pattern using **PrimeNG** UI components and **Reactive Forms** with **Nx** monorepo management. The application showcases expandable table rows with inline editing capabilities.
+This is a **full-stack Nx monorepo** with an **Angular 19** frontend and **NestJS** backend, demonstrating a master-details pattern using **PrimeNG** UI components and **Reactive Forms**. The application showcases expandable table rows with inline editing capabilities, backed by a REST API with JWT authentication.
 
 ### Technology Stack
+
+#### Frontend (customer-ui)
 - **Angular 19** with standalone components
-- **PrimeNG 19** for UI components (Table, Select, Button, Tooltip, Ripple)
+- **PrimeNG 19** for UI components (Table, Select, Button, Tooltip, Ripple, Dialog, Toast)
 - **TypeScript 5.5** with strict mode enabled
 - **Reactive Forms** with typed FormArrays and FormGroups
-- **Nx 22** for monorepo tooling and caching
-- **Jasmine & Karma** for testing (90 tests currently)
+- **Jasmine & Karma** for unit testing
 - **RxJS** for reactive programming
+
+#### Backend (customer-api)
+- **NestJS 11** for REST API framework
+- **TypeORM** for database ORM
+- **SQLite** for database (development)
+- **JWT** for authentication
+- **bcrypt** for password hashing
+- **Swagger/OpenAPI** for API documentation
+- **Jest** for unit testing
+- **class-validator** for DTO validation
+
+#### Tooling
+- **Nx 22** for monorepo management and caching
+- **ESLint** for linting
+- **Prettier** for code formatting
 
 ### Key Architectural Patterns
 - **Standalone components** (no NgModule)
@@ -52,18 +68,51 @@ npx nx reset                    # Clear Nx cache
 
 ## Code Organization
 
+### Nx Monorepo Structure
+```
+apps/
+├── customer-ui/          # Angular 19 frontend application
+│   └── src/app/
+│       ├── components/   # Standalone components
+│       ├── guards/       # Route guards (auth)
+│       ├── interceptors/ # HTTP interceptors (auth, loader)
+│       ├── models/       # TypeScript interfaces
+│       ├── services/     # Injectable services
+│       └── testing/      # Test utilities and mock data
+│
+├── customer-api/         # NestJS backend API
+│   └── src/app/
+│       ├── auth/         # Authentication module (JWT, Passport)
+│       ├── customers/    # Customers module (CRUD operations)
+│       ├── entities/     # TypeORM entities
+│       ├── seed/         # Database seeding logic
+│       ├── cli/          # CLI commands (seed-database)
+│       └── common/       # Shared utilities (guards, filters, pipes)
+│
+└── libs/
+    └── shared-models/    # Shared TypeScript models (Customer, Beneficiary)
+```
+
+### Frontend Structure (customer-ui)
 ```
 src/app/
-├── components/           # Standalone components
+├── components/
 │   ├── customer-table/   # Main table component with master-details
+│   ├── login/            # Login page component
 │   └── global-loader/    # Loading indicator component
-├── models/              # TypeScript interfaces and types
-│   └── customer.model.ts # Customer, Beneficiary, and typed form interfaces
-├── services/            # Injectable services
-│   ├── customer.service.ts  # Data access service
-│   └── loader.service.ts    # Loading state management
-└── testing/             # Test utilities and mock data
-    └── mock-data.ts     # Mock customer data for testing
+├── services/
+│   ├── api/              # API integration services
+│   │   ├── auth.service.ts        # Authentication API calls
+│   │   └── customer-api.service.ts # Customer CRUD API calls
+│   └── ui/               # UI-specific services
+│       ├── error-handling.service.ts  # Global error handling
+│       ├── notification.service.ts    # Toast notifications
+│       └── loader.service.ts          # Loading state
+├── guards/
+│   └── auth.guard.ts     # Route protection
+└── interceptors/
+    ├── auth.interceptor.ts    # Add JWT token to requests
+    └── loader.interceptor.ts  # Show/hide loader
 ```
 
 ## Angular & PrimeNG Guidelines
@@ -127,7 +176,7 @@ myForm = this.fb.group<MyDataForm>({
 - Leverage PrimeNG directives like `pRipple`, `pTooltip`
 - When using a `p-select` make sure to include `appendTo='body'` like this:
   ```html
-     <p-select ... apendTo="body"/>
+     <p-select ... appendTo="body"/>
   ```
 
 ### Services
@@ -258,14 +307,182 @@ If tasked with creating a new API in this workspace:
 
 5. **Document API endpoints** with Swagger/OpenAPI
 
+## NestJS API Testing (Jest)
+
+### Test Structure
+- Use **Jest** as the test framework for NestJS API
+- Place test files alongside source files with `.spec.ts` extension
+- Use `@nestjs/testing` for TestingModule setup
+- Mock external dependencies using Jest mocks
+
+### Test Patterns
+```typescript
+describe('MyService', () => {
+  let service: MyService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [MyService],
+    }).compile();
+
+    service = module.get<MyService>(MyService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+```
+
+### Coverage Goals
+- Aim for **75%+ code coverage** for both UI and API
+- Test happy paths and error scenarios
+- Test input validation and DTOs
+- Test authentication and authorization logic
+
+## Environment Configuration
+
+### API Configuration
+- **Always use `.env` files** for environment-specific configuration
+- **Never commit `.env` files** - use `.env.example` as template
+- **Required environment variables** for API:
+  - `JWT_SECRET` - Secure random string for JWT signing (required in production)
+  - `SEED_USERNAME` - Username for database seeding
+  - `SEED_PASSWORD` - Password for database seeding
+  - `PORT` - API port (default: 3000)
+  - `DATABASE_PATH` - SQLite database file path
+
+Example `.env` file:
+```bash
+JWT_SECRET=your-secure-random-secret-key-here
+SEED_USERNAME=admin
+SEED_PASSWORD=admin123
+PORT=3000
+DATABASE_PATH=./database.sqlite
+```
+
+### UI Configuration
+- Use `environment.ts` and `environment.prod.ts` for environment-specific settings
+- Configure API base URL in environment files
+- Use Angular's environment injection for accessing configuration
+
+## Database and CLI Commands
+
+### Database Seeding
+To initialize the database with seed data:
+```bash
+npm run seed
+```
+
+**Important:** Ensure `SEED_USERNAME` and `SEED_PASSWORD` are set in `apps/customer-api/.env` before running the seed command.
+
+### TypeORM Patterns
+- Use **TypeORM entities** for database models
+- Use **repositories** for data access
+- Use **migrations** for schema changes (when needed)
+- Entity IDs should use **UUID v4** format
+
+Example entity:
+```typescript
+@Entity()
+export class Customer {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+}
+```
+
+## Form State Management
+
+### Change Detection in Forms
+- Track original values to detect unsaved changes
+- Use a separate `originalAnswer` field to track the initial state
+- When creating forms from API data, ensure `originalAnswer` defaults to current `answer` if not provided
+- This prevents false "unsaved changes" warnings
+
+Example:
+```typescript
+createBeneficiaryFormGroup(beneficiary: Beneficiary): FormGroup {
+  return this.fb.group({
+    answer: [beneficiary.answer],
+    originalAnswer: [beneficiary.originalAnswer || beneficiary.answer]
+  });
+}
+```
+
+### Form Validation
+- Add validators to FormControls as needed
+- Display validation errors in the UI
+- Disable save buttons when forms are invalid
+- Use PrimeNG's form validation feedback components
+
 ## Common Pitfalls to Avoid
 
+### Angular/PrimeNG
 - **Don't forget to unsubscribe from Observables** in components (use `takeUntil`, `async` pipe, or `DestroyRef`)
 - **Don't mutate form values directly** - use `patchValue()` or `setValue()`
 - **Don't import entire PrimeNG library** - import specific modules only
 - **Don't mix reactive and template-driven forms** - this project uses reactive forms
 - **Don't forget to call `detectChanges()`** in tests after making changes
 - **Don't modify mock data directly** in tests - create copies
+- **Don't forget `appendTo="body"`** on `p-select` components to prevent overflow issues
+
+### NestJS API
+- **Don't commit sensitive data** like JWT secrets or passwords
+- **Don't skip input validation** - always use DTOs with class-validator
+- **Don't return raw errors** to clients - use proper exception filters
+- **Don't forget to hash passwords** - never store plain text passwords
+- **Don't skip API documentation** - use Swagger decorators
+
+### Nx Monorepo
+- **Don't run `npm install` in individual apps** - always install at root level
+- **Use `--legacy-peer-deps`** when installing dependencies to avoid peer dependency conflicts
+- **Use Nx commands** (`npx nx serve`, `npx nx test`) instead of Angular CLI directly
+- **Clear Nx cache** (`npx nx reset`) if you encounter strange build issues
+
+## Debugging Common Issues
+
+### "Unknown file extension .ts" in Node.js 20+
+- **Cause**: Node.js 20+ requires explicit loader configuration for TypeScript
+- **Solution**: Use `ts-node` with proper tsconfig path:
+  ```bash
+  ts-node -P apps/customer-api/tsconfig.app.json script.ts
+  ```
+
+### Dropdown Overflow in Tables
+- **Cause**: p-select dropdown is clipped by table cell overflow
+- **Solution**: Add `appendTo="body"` to p-select components
+
+### False "Unsaved Changes" Detection
+- **Cause**: Missing or inconsistent `originalAnswer` values
+- **Solution**: Default `originalAnswer` to current `answer` when creating forms
+
+### CI Coverage Upload Fails
+- **Cause**: Coverage not generated during test runs
+- **Solution**: Add `--coverage` or `--code-coverage` flags to test commands
+
+## CI/CD Guidelines
+
+### GitHub Actions Workflow
+- Run tests on **Node.js 18.x and 20.x** matrices
+- Use `--legacy-peer-deps` for npm install
+- Build and test in order: shared library → API → UI
+- Generate coverage reports for all projects
+- Use `--watch=false` and `--browsers=ChromeHeadless` for UI tests in CI
+
+### Test Commands for CI
+```bash
+# Shared library
+npx nx test shared-models --coverage
+
+# API
+npx nx test customer-api --coverage
+
+# UI
+npx nx test customer-ui --watch=false --browsers=ChromeHeadless --code-coverage
+```
 
 ## Resources
 
@@ -273,8 +490,30 @@ If tasked with creating a new API in this workspace:
 - [PrimeNG Documentation](https://primeng.org)
 - [Nx Documentation](https://nx.dev)
 - [RxJS Documentation](https://rxjs.dev)
+- [NestJS Documentation](https://nestjs.com)
+- [TypeORM Documentation](https://typeorm.io)
+- [Jest Documentation](https://jestjs.io)
+- **[Best Practices Guide](../../BEST_PRACTICES.md)** - See comprehensive API/UI best practices
 
+## Testing Full-Stack Application
 
-# Testing bugs related to UI/API 
-- Frst start the API project
-- Then the customer-ui project
+### Testing UI/API Integration
+1. **First, start the API project:**
+   ```bash
+   npx nx serve customer-api
+   ```
+   The API will be available at `http://localhost:3000/api`
+
+2. **Then, start the UI project:**
+   ```bash
+   npx nx serve customer-ui
+   ```
+   The UI will be available at `http://localhost:4200`
+
+3. **Login credentials** (after running `npm run seed`):
+   - Username: Value from `SEED_USERNAME` in `.env`
+   - Password: Value from `SEED_PASSWORD` in `.env`
+
+### API Documentation
+- Swagger UI is available at: `http://localhost:3000/api/docs`
+- Use this to explore and test API endpoints directly
