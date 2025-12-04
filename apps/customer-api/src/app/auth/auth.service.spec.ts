@@ -6,6 +6,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UserEntity } from '../entities/user.entity';
+import { ITokenStorage } from './interfaces/token-storage.interface';
+import { TOKEN_STORAGE } from './auth.module';
 
 jest.mock('bcrypt');
 
@@ -13,6 +15,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let userRepository: Repository<UserEntity>;
   let jwtService: JwtService;
+  let tokenStorage: ITokenStorage;
 
   const mockUser = {
     id: 1,
@@ -30,6 +33,14 @@ describe('AuthService', () => {
     sign: jest.fn(),
   };
 
+  const mockTokenStorage = {
+    store: jest.fn(),
+    get: jest.fn(),
+    delete: jest.fn(),
+    verify: jest.fn(),
+    cleanupExpired: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +53,10 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: mockJwtService,
         },
+        {
+          provide: TOKEN_STORAGE,
+          useValue: mockTokenStorage,
+        },
       ],
     }).compile();
 
@@ -50,6 +65,7 @@ describe('AuthService', () => {
       getRepositoryToken(UserEntity)
     );
     jwtService = module.get<JwtService>(JwtService);
+    tokenStorage = module.get<ITokenStorage>(TOKEN_STORAGE);
   });
 
   afterEach(() => {
@@ -89,17 +105,19 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should login a user and return access token', async () => {
+    it('should login a user and return access token and refresh token', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('jwt-token');
+      mockTokenStorage.store.mockResolvedValue(undefined);
 
       const result = await service.login('testuser', 'password123');
 
-      expect(result).toEqual({
-        access_token: 'jwt-token',
-        username: 'testuser',
-      });
+      expect(result).toHaveProperty('access_token', 'jwt-token');
+      expect(result).toHaveProperty('refresh_token');
+      expect(result).toHaveProperty('username', 'testuser');
+      expect(typeof result.refresh_token).toBe('string');
+      expect(result.refresh_token.length).toBeGreaterThan(0);
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { username: 'testuser' },
       });
@@ -107,6 +125,7 @@ describe('AuthService', () => {
         'password123',
         'hashedpassword'
       );
+      expect(tokenStorage.store).toHaveBeenCalled();
     });
 
     it('should throw error if user not found', async () => {
@@ -138,6 +157,50 @@ describe('AuthService', () => {
       mockUserRepository.findOne.mockResolvedValue(null);
       const result = await service.validateUser(999);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('refreshAccessToken', () => {
+    it('should refresh access token with valid refresh token', async () => {
+      mockTokenStorage.verify.mockResolvedValue(true);
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockJwtService.sign.mockReturnValue('new-jwt-token');
+
+      const result = await service.refreshAccessToken(1, 'valid-refresh-token');
+
+      expect(result).toEqual({
+        access_token: 'new-jwt-token',
+        username: 'testuser',
+      });
+      expect(tokenStorage.verify).toHaveBeenCalledWith(1, 'valid-refresh-token');
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+    });
+
+    it('should throw error if refresh token is invalid', async () => {
+      mockTokenStorage.verify.mockResolvedValue(false);
+
+      await expect(
+        service.refreshAccessToken(1, 'invalid-token')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw error if user not found', async () => {
+      mockTokenStorage.verify.mockResolvedValue(true);
+      mockUserRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.refreshAccessToken(1, 'valid-token')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('revokeRefreshToken', () => {
+    it('should revoke refresh token', async () => {
+      mockTokenStorage.delete.mockResolvedValue(undefined);
+
+      await service.revokeRefreshToken(1);
+
+      expect(tokenStorage.delete).toHaveBeenCalledWith(1);
     });
   });
 });

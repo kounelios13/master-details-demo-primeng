@@ -6,6 +6,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UserEntity } from '../entities/user.entity';
+import { ITokenStorage } from './interfaces/token-storage.interface';
+import { InMemoryTokenStorage } from './token-storage/in-memory-token-storage';
+
+export const TOKEN_STORAGE = 'ITokenStorage';
 
 @Module({
   imports: [
@@ -20,7 +24,14 @@ import { UserEntity } from '../entities/user.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService, 
+    JwtStrategy,
+    {
+      provide: TOKEN_STORAGE,
+      useClass: InMemoryTokenStorage,
+    },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}
