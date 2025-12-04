@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, BehaviorSubject, throwError, switchMap, catchError } from 'rxjs';
+import { Observable, tap, BehaviorSubject, throwError, switchMap, catchError, filter, take, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginResponse {
@@ -33,6 +33,9 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private refreshTokenKey = 'refresh_token';
   private userIdKey = 'user_id';
+  
+  // Token expiration buffer in seconds (5 minutes)
+  private readonly TOKEN_EXPIRATION_BUFFER = 300;
   
   // Track if a token refresh is in progress to prevent multiple simultaneous refresh attempts
   private isRefreshing = false;
@@ -102,7 +105,7 @@ export class AuthService {
 
   /**
    * Check if the access token is expired or about to expire
-   * Returns true if token will expire within 5 minutes
+   * Returns true if token will expire within TOKEN_EXPIRATION_BUFFER seconds
    */
   isTokenExpired(): boolean {
     const token = this.getToken();
@@ -115,10 +118,9 @@ export class AuthService {
       return true;
     }
 
-    // Check if token expires within 5 minutes (300 seconds)
-    const expirationBuffer = 300;
+    // Check if token expires within the expiration buffer
     const currentTime = Math.floor(Date.now() / 1000);
-    return tokenData.exp < currentTime + expirationBuffer;
+    return tokenData.exp < currentTime + this.TOKEN_EXPIRATION_BUFFER;
   }
 
   /**
@@ -135,11 +137,16 @@ export class AuthService {
     // If already refreshing, wait for the current refresh to complete
     if (this.isRefreshing) {
       return this.refreshTokenSubject.pipe(
-        switchMap(token => {
-          if (token) {
-            return this.http.post<RefreshTokenResponse>(`${this.apiUrl}/auth/refresh`, {
-              userId,
-              refreshToken,
+        filter(token => token !== null),
+        take(1),
+        switchMap(() => {
+          // Return the response with the newly refreshed token
+          const newToken = this.getToken();
+          if (newToken) {
+            const tokenData = this.decodeToken(newToken);
+            return of({
+              access_token: newToken,
+              username: tokenData?.username || ''
             });
           }
           return throwError(() => new Error('Token refresh failed'));
