@@ -61,7 +61,7 @@ describe('LoginComponent', () => {
     it('should call authService.login with username and password', () => {
       component.username = 'testuser';
       component.password = 'testpass';
-      authService.login.and.returnValue(of({ access_token: 'token', username: 'testuser' }));
+      authService.login.and.returnValue(of({ access_token: 'token', refresh_token: 'refresh-token', username: 'testuser' }));
 
       component.login();
 
@@ -71,7 +71,7 @@ describe('LoginComponent', () => {
     it('should navigate to customers on successful login', () => {
       component.username = 'testuser';
       component.password = 'testpass';
-      authService.login.and.returnValue(of({ access_token: 'token', username: 'testuser' }));
+      authService.login.and.returnValue(of({ access_token: 'token', refresh_token: 'refresh-token', username: 'testuser' }));
 
       component.login();
 
@@ -82,7 +82,7 @@ describe('LoginComponent', () => {
       component.errorMessage = 'Previous error';
       component.username = 'testuser';
       component.password = 'testpass';
-      authService.login.and.returnValue(of({ access_token: 'token', username: 'testuser' }));
+      authService.login.and.returnValue(of({ access_token: 'token', refresh_token: 'refresh-token', username: 'testuser' }));
 
       component.login();
 

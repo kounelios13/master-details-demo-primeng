@@ -24,6 +24,9 @@ libs/
 - ✅ PrimeNG table with expandable rows (master-details pattern)
 - ✅ Reactive Forms with nested FormArrays
 - ✅ JWT authentication with login page
+- ✅ **Refresh token functionality with automatic renewal**
+- ✅ **Proactive token refresh before expiration**
+- ✅ **Automatic 401 error handling with token refresh retry**
 - ✅ HTTP client integration with REST API
 - ✅ Inline editing with dropdowns
 - ✅ Change tracking and validation
@@ -37,6 +40,8 @@ libs/
 - ✅ NestJS REST API with TypeScript
 - ✅ SQLite database with TypeORM
 - ✅ JWT authentication with Passport
+- ✅ **Refresh token endpoint with in-memory storage**
+- ✅ **Token storage abstraction (ready for Redis migration)**
 - ✅ Password hashing with bcrypt
 - ✅ Automatic database seeding
 - ✅ Protected API endpoints
@@ -146,9 +151,31 @@ Response:
 ```json
 {
   "access_token": "jwt-token-string",
+  "refresh_token": "opaque-refresh-token",
   "username": "demo"
 }
 ```
+
+#### Refresh Token
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "refreshToken": "opaque-refresh-token"
+}
+```
+
+Response:
+```json
+{
+  "access_token": "new-jwt-token-string",
+  "username": "demo"
+}
+```
+
+**Note:** The frontend automatically handles token refresh before expiration and on 401 errors.
 
 #### Register
 ```http
@@ -333,13 +360,20 @@ For production, edit `environment.prod.ts` with your production API URL.
 
 ## Security Features
 
-- JWT-based authentication with HTTP interceptor
-- Password hashing with bcrypt (10 salt rounds)
-- Protected API routes with JWT guard
-- CORS enabled for frontend communication
-- Environment-based configuration (no hardcoded secrets)
-- Secure token storage in localStorage with automatic injection via interceptor
-- CLI-based database initialization (not automatic on startup)
+- **JWT-based authentication** with HTTP interceptor
+- **Refresh token implementation** with automatic renewal
+  - Opaque refresh tokens (random bytes, not JWT)
+  - 7-day expiration for refresh tokens
+  - In-memory storage (ready for Redis migration via `ITokenStorage` interface)
+  - Automatic proactive refresh (5-minute buffer before expiration)
+  - Graceful 401 error handling with automatic retry
+  - Prevention of multiple simultaneous refresh attempts
+- **Password hashing** with bcrypt (10 salt rounds)
+- **Protected API routes** with JWT guard
+- **CORS enabled** for frontend communication
+- **Environment-based configuration** (no hardcoded secrets)
+- **Secure token storage** in localStorage with automatic injection via interceptor
+- **CLI-based database initialization** (not automatic on startup)
 
 ## Key Concepts
 
