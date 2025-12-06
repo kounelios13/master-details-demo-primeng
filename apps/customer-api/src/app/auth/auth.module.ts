@@ -6,10 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UserEntity } from '../entities/user.entity';
-import { ITokenStorage } from './interfaces/token-storage.interface';
 import { InMemoryTokenStorage } from './token-storage/in-memory-token-storage';
-
-export const TOKEN_STORAGE = 'ITokenStorage';
+import { TOKEN_STORAGE } from './auth.constants';
 
 @Module({
   imports: [

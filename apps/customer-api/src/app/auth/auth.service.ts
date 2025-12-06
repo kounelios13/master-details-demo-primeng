@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { UserEntity } from '../entities/user.entity';
 import { ITokenStorage } from './interfaces/token-storage.interface';
-import { TOKEN_STORAGE } from './auth.module';
+import { TOKEN_STORAGE } from './auth.constants';
 
 @Injectable()
 export class AuthService {
