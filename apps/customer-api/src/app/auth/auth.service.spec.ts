@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UserEntity } from '../entities/user.entity';
 import { ITokenStorage } from './interfaces/token-storage.interface';
-import { TOKEN_STORAGE } from './auth.module';
+import { TOKEN_STORAGE } from './auth.constants';
 
 jest.mock('bcrypt');
 
